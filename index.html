@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>链式反应</title>
+		<meta name ="keywords" content="Sign,ccx01,sign,the day of sign,signXday,沙因,游戏,银河,宇宙,时间,链式反应">
+		<meta name="description" content="链式反应,计划通,链式问答具象化">
+		<style>
+			.node {
+				overflow: hidden;
+				margin: 20px 10px;
+			}
+			.node .scene {
+				border: 1px solid #ccc;
+				padding: 10px;
+				border-radius: 4px;
+			}
+			.node .action {
+				overflow: hidden;
+				float: left;
+			}
+			.node .action span,
+			.node .add {
+				/*display: none;*/
+				float: left;
+				border: 1px solid #eee;
+				padding: 10px;
+				border-radius: 4px;
+				margin: 10px 10px 10px 0;
+			}
+			.node:hover .action span,
+			.node:hover .add {
+				display: block;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="page">
+			<div class="node">
+				<div class="scene"></div>
+				<div class="action">
+					<span></span>
+					<span></span>
+				</div>
+				<div class="add">+</div>
+			</div>
+			<div class="node">
+				<div class="scene"></div>
+				<div class="action">
+					<span></span>
+					<span></span>
+				</div>
+				<div class="add">+</div>
+			</div>
+			<!-- <div class="more">+</div> -->
+		</div>
+		<!-- id cont tag time -->
+		<template id="main-tpl" class="tpl">
+			<div class="node" data-time="{#time}" data-json="">
+				<div class="scene" data-mid="{#id}" onclick='getScene({#id},"mid")'>{#cont}</div>
+			</div>
+			<div class="add">
+				<input id="add-main" type="text">
+				<span onclick='addMain()'>添加主干</span>
+			</div>
+		</template>
+		<!-- id mid aid cont time -->
+		<template id="scene-tpl" class="tpl">
+			<div class="node" data-time="{#time}">
+				<div class="scene" data-mid="{#mid}" onclick='getAction("{#id}")'>{#cont}</div>
+				<div id="s{#id}" class="action"></div>
+				<div class="add">
+					<input id="add-action{#id}" type="text">
+					<span onclick='addAction("{#id}")'>添加行为</span>
+				</div>
+			</div>
+			<div class="add">
+				<input id="add-scene{#mid}" type="text">
+				<span onclick='addScene({#aid}, {#mid})'>添加场景</span>
+			</div>
+		</template>
+		<!-- id sid cont time -->
+		<template id="action-tpl" class="tpl">
+			<span id="a{#id}" data-time="{#time}" data-sid="{#sid}" onclick='getScene({#id},"aid")'>{#cont}</span>
+		</template>
+		<!-- template -->
+		<script>
+			/* ajax */
+			function ajax(url, data, callback) {
+				var xmlhttp = new XMLHttpRequest();
+					xmlhttp.open("POST", url, true);
+					xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+					xmlhttp.send(data);
+					callback = callback || function() {};
+				xmlhttp.onreadystatechange = function() {
+					if(xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+						callback(JSON.parse(xmlhttp.responseText));
+					}
+				}
+			}
+			/* ajax */
+
+			/* dom control */
+			/*HTMLElement.prototype.appendNodes = function(nodes) {
+				var fragment = document.createDocumentFragment();
+				for(var i = 0; i < nodes.length; i++) {
+					fragment.appendChild(nodes[i].cloneNode(true));
+				}
+				this.appendChild(fragment);
+			}
+			function genNode(html) {
+				var div_tmp = document.createElement("div");
+					div_tmp.innerHTML = html;
+				var nodes = div_tmp.childNodes; 
+				return nodes;
+			}*/
+			function tplEngine(tpl, data) {
+				var re = /{#(\w+)?}/;
+				while (match = re.exec(tpl)) {
+					tpl = tpl.replace(match[0], data[match[1]]);
+				}
+				return tpl;
+			}
+			/* dom control */
+
+			/* page fill */
+			var $page = document.querySelector(".page");
+			function getHtml(tpl, data) {
+				var html = "";
+				for (var i = 0; i < data.length; i++) {
+					html += tplEngine(tpl, data[i]);
+				}
+				return html;
+			}
+
+			/* main */
+			getMainPage();
+
+			function getMainPage() {
+				ajax("data/main.php", "", function(data) {
+					if(data) {
+						var main_tpl = document.querySelector('#main-tpl').innerHTML;
+						$page.innerHTML = getHtml(main_tpl, data);
+					} else {
+						data = [{}];
+						var main_tpl = document.querySelector('#main-tpl').innerHTML;
+						$page.innerHTML = getHtml(main_tpl, data);
+					}
+				});
+			}
+
+			function addMain() {
+				var cont = document.querySelector("#add-main").value;
+				var data = 'cont=' + cont;
+				ajax("data/main.php", data, function(data) {
+					if(data == 1) {
+						getMainPage();
+					}else{
+						alert("添加失败");
+					}
+				});
+			}
+			/* main */
+
+			/* scene */
+			function getScene(id, type) {
+				var data = type == "aid" ? 'aid=' : 'mid=';
+				data += id;
+				ajax("data/scene.php", data, function(data) {
+					if(data) {
+						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
+						$page.innerHTML = getHtml(scene_tpl, data);
+					} else {
+						data = [{"mid": 0}];
+						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
+						$page.innerHTML = getHtml(scene_tpl, data);
+					}
+				});
+			}
+
+			function addScene(aid, mid) {
+				var cont = document.querySelector("#add-scene" + mid).value;
+				var data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont;
+				ajax("data/scene.php", data, function(data) {
+					if(data == 1) {
+						getScene(mid);
+					}else{
+						alert("添加失败");
+					}
+				});
+			}
+			/* scene */
+
+			/* action */
+			function getAction(sid) {
+				ajax("data/action.php", "id=" + sid, function(data) {
+					if(data) {
+						var action_tpl = document.querySelector('#action-tpl').innerHTML;
+						var $action = document.querySelector("#s" + sid);
+						$action.innerHTML = getHtml(action_tpl, data);
+					}
+				});
+			}
+
+			function addAction(id) {
+				var cont = document.querySelector("#add-action" + id).value;
+				var data = 'id=' + id + '&cont=' + cont;
+				ajax("data/action.php", data, function(data) {
+					if(data == 1) {
+						getAction(id);
+					}else{
+						alert("添加失败");
+					}
+				});
+			}
+			/* action */
+
+			/* page fill */
+
+
+		</script>
+	</body>
+</html>
