@@ -35,7 +35,7 @@
 		<!-- id cont tag time -->
 		<template id="main-tpl" class="tpl">
 			<div class="node" data-time="{#time}" data-json="">
-				<div class="scene" data-mid="{#id}" onclick='getScene({#id},"mid")'>{#cont}</div>
+				<div class="scene" data-mid="{#id}" onclick='getScene(0, {#id})'>{#cont}</div>
 			</div>
 		</template>
 		<template id="add-main-tpl" class="tpl">
@@ -47,7 +47,7 @@
 		<!-- id mid aid cont time -->
 		<template id="scene-tpl" class="tpl">
 			<div class="node" data-time="{#time}">
-				<div class="scene" data-mid="{#mid}" onclick='getAction("{#id}")'>{#cont}</div>
+				<div class="scene" data-mid="{#mid}" onclick='getAction({#id})'>{#cont}</div>
 				<div id="s{#id}" class="action"></div>
 			</div>
 		</template>
@@ -59,12 +59,12 @@
 		</template>
 		<!-- id sid cont time -->
 		<template id="action-tpl" class="tpl">
-			<span id="a{#id}" class="option" data-time="{#time}" data-sid="{#sid}" onclick='getScene({#id},"aid")'>{#cont}</span>
+			<span id="a{#id}" class="option" data-time="{#time}" data-sid="{#sid}" onclick='getScene({#id}, 0)'>{#cont}</span>
 		</template>
 		<template id="add-action-tpl" class="tpl">
 			<div class="add">
 				<input id="add-action{#id}" type="text">
-				<span onclick='addAction("{#id}")'>添加行为</span>
+				<span onclick='addAction({#id})'>添加行为</span>
 			</div>
 		</template>
 		<!-- template -->
@@ -147,13 +147,14 @@
 			/* main */
 
 			/* scene */
-			function getScene(id, type) {
-				var data = type == "aid" ? 'aid=' : 'mid=';
-				data += id;
-				var add_data = type == "aid" ? [{'aid':id}] : [{'mid':id}];
+			var _mid = 0;	// setting _mid just make easy to search
+			function getScene(aid, mid) {
+				_mid = mid || _mid;
+				var data = "aid=" + aid + "&mid=" + _mid;
+				var add_data = [{'aid': aid, 'mid': _mid}];
 				ajax("data/scene.php", data, function(data) {
 					// for search function
-					// window.location.hash = "action" + id;
+					// window.location.hash = "m" + _mid + "a" + aid;
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
@@ -170,7 +171,7 @@
 				var data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont;
 				ajax("data/scene.php", data, function(data) {
 					if(data == 1) {
-						getScene(mid);
+						getScene(aid, mid);
 					}else{
 						alert("添加失败");
 					}
@@ -180,7 +181,7 @@
 
 			/* action */
 			function getAction(sid) {
-				var add_data = [{'id':sid}];
+				var add_data = [{'id': sid}];
 				ajax("data/action.php", "id=" + sid, function(data) {
 					if(data) {
 						var action_tpl = document.querySelector('#action-tpl').innerHTML;
