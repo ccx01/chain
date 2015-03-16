@@ -19,7 +19,7 @@
 				overflow: hidden;
 				float: left;
 			}
-			.node .action span,
+			.node .action .option,
 			.node .add {
 				/*display: none;*/
 				float: left;
@@ -27,10 +27,6 @@
 				padding: 10px;
 				border-radius: 4px;
 				margin: 10px 10px 10px 0;
-			}
-			.node:hover .action span,
-			.node:hover .add {
-				display: block;
 			}
 		</style>
 	</head>
@@ -59,6 +55,8 @@
 			<div class="node" data-time="{#time}" data-json="">
 				<div class="scene" data-mid="{#id}" onclick='getScene({#id},"mid")'>{#cont}</div>
 			</div>
+		</template>
+		<template id="add-main-tpl" class="tpl">
 			<div class="add">
 				<input id="add-main" type="text">
 				<span onclick='addMain()'>添加主干</span>
@@ -69,11 +67,9 @@
 			<div class="node" data-time="{#time}">
 				<div class="scene" data-mid="{#mid}" onclick='getAction("{#id}")'>{#cont}</div>
 				<div id="s{#id}" class="action"></div>
-				<div class="add">
-					<input id="add-action{#id}" type="text">
-					<span onclick='addAction("{#id}")'>添加行为</span>
-				</div>
 			</div>
+		</template>
+		<template id="add-scene-tpl" class="tpl">
 			<div class="add">
 				<input id="add-scene{#mid}" type="text">
 				<span onclick='addScene({#aid}, {#mid})'>添加场景</span>
@@ -81,7 +77,13 @@
 		</template>
 		<!-- id sid cont time -->
 		<template id="action-tpl" class="tpl">
-			<span id="a{#id}" data-time="{#time}" data-sid="{#sid}" onclick='getScene({#id},"aid")'>{#cont}</span>
+			<span id="a{#id}" class="option" data-time="{#time}" data-sid="{#sid}" onclick='getScene({#id},"aid")'>{#cont}</span>
+		</template>
+		<template id="add-action-tpl" class="tpl">
+			<div class="add">
+				<input id="add-action{#id}" type="text">
+				<span onclick='addAction("{#id}")'>添加行为</span>
+			</div>
 		</template>
 		<!-- template -->
 		<script>
@@ -140,7 +142,8 @@
 				ajax("data/main.php", "", function(data) {
 					if(data) {
 						var main_tpl = document.querySelector('#main-tpl').innerHTML;
-						$page.innerHTML = getHtml(main_tpl, data);
+						var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
+						$page.innerHTML = getHtml(main_tpl, data) + add_main_tpl;
 					} else {
 						data = [{}];
 						var main_tpl = document.querySelector('#main-tpl').innerHTML;
@@ -166,14 +169,15 @@
 			function getScene(id, type) {
 				var data = type == "aid" ? 'aid=' : 'mid=';
 				data += id;
+				var add_data = type == "aid" ? [{'aid':id}] : [{'mid':id}];
 				ajax("data/scene.php", data, function(data) {
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
-						$page.innerHTML = getHtml(scene_tpl, data);
+						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
+						$page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
 					} else {
-						data = [{"mid": 0}];
-						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
-						$page.innerHTML = getHtml(scene_tpl, data);
+						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
+						$page.innerHTML = getHtml(add_scene_tpl, add_data);
 					}
 				});
 			}
@@ -193,11 +197,17 @@
 
 			/* action */
 			function getAction(sid) {
+				var add_data = [{'id':sid}];
 				ajax("data/action.php", "id=" + sid, function(data) {
 					if(data) {
 						var action_tpl = document.querySelector('#action-tpl').innerHTML;
+						var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
 						var $action = document.querySelector("#s" + sid);
-						$action.innerHTML = getHtml(action_tpl, data);
+						$action.innerHTML = getHtml(action_tpl, data) + getHtml(add_action_tpl, add_data);
+					} else {
+						var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
+						var $action = document.querySelector("#s" + sid);
+						$action.innerHTML = getHtml(add_action_tpl, add_data);
 					}
 				});
 			}
