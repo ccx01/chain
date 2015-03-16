@@ -31,25 +31,7 @@
 		</style>
 	</head>
 	<body>
-		<div class="page">
-			<div class="node">
-				<div class="scene"></div>
-				<div class="action">
-					<span></span>
-					<span></span>
-				</div>
-				<div class="add">+</div>
-			</div>
-			<div class="node">
-				<div class="scene"></div>
-				<div class="action">
-					<span></span>
-					<span></span>
-				</div>
-				<div class="add">+</div>
-			</div>
-			<!-- <div class="more">+</div> -->
-		</div>
+		<div class="page"></div>
 		<!-- id cont tag time -->
 		<template id="main-tpl" class="tpl">
 			<div class="node" data-time="{#time}" data-json="">
@@ -145,9 +127,8 @@
 						var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
 						$page.innerHTML = getHtml(main_tpl, data) + add_main_tpl;
 					} else {
-						data = [{}];
-						var main_tpl = document.querySelector('#main-tpl').innerHTML;
-						$page.innerHTML = getHtml(main_tpl, data);
+						var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
+						$page.innerHTML = add_main_tpl;
 					}
 				});
 			}
@@ -171,6 +152,8 @@
 				data += id;
 				var add_data = type == "aid" ? [{'aid':id}] : [{'mid':id}];
 				ajax("data/scene.php", data, function(data) {
+					// for search function
+					// window.location.hash = "action" + id;
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
