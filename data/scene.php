@@ -2,7 +2,7 @@
 include('common.php');
 $mid = $_POST['mid'] | 0;
 $aid = $_POST['aid'] | 0;
-if(isset($_POST['cont'])) {
+if(isset($_POST['cont']) && !empty($_POST['cont'])) {
 	$cont = $_POST['cont'];
 	$sql = "INSERT INTO scene (mid,aid,cont) VALUES ('$mid','$aid','$cont')";
 	$result = mysql_query($sql);

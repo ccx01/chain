@@ -1,10 +1,7 @@
 <?php
-header("Cache-Control: no-cache");
-header("Pragma: no-cache");
-header('content-type:text/html;charset=utf-8');
 include('common.php');
 
-if(isset($_POST['cont'])) {
+if(isset($_POST['cont']) && !empty($_POST['cont'])) {
 	$cont = $_POST['cont'];
 	$sql = "INSERT INTO main (cont) VALUES ('$cont')";
 	$result = mysql_query($sql);

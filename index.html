@@ -21,7 +21,6 @@
 			}
 			.node .action .option,
 			.node .add {
-				/*display: none;*/
 				float: left;
 				border: 1px solid #eee;
 				padding: 10px;
@@ -85,6 +84,19 @@
 			/* ajax */
 
 			/* dom control */
+			// messsssssss
+			/*document.querySelector(".page").addEventListener("click", getPage);
+			function getPage(e) {
+				console.log(e.target.dataset);
+				switch(e.target.className) {
+					case "scene":
+
+					break;
+					case "option":
+
+					break;
+				}
+			}*/
 			/*HTMLElement.prototype.appendNodes = function(nodes) {
 				var fragment = document.createDocumentFragment();
 				for(var i = 0; i < nodes.length; i++) {
@@ -118,8 +130,6 @@
 			}
 
 			/* main */
-			getMainPage();
-
 			function getMainPage() {
 				ajax("data/main.php", "", function(data) {
 					if(data) {
@@ -147,13 +157,14 @@
 			/* main */
 
 			/* scene */
-			var _mid = 0;	// setting _mid just make easy to search
+			var _mid = 0;	// setting _mid just make easy to search, event bind will solve it
 			function getScene(aid, mid) {
 				_mid = mid || _mid;
 				var data = "aid=" + aid + "&mid=" + _mid;
 				var add_data = [{'aid': aid, 'mid': _mid}];
 				ajax("data/scene.php", data, function(data) {
 					// for search function
+					/* useless for the moment */
 					// window.location.hash = "m" + _mid + "a" + aid;
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
@@ -210,7 +221,16 @@
 			/* action */
 
 			/* page fill */
-
+			/* start */
+			/* useless for the moment */
+			/*var hash = window.location.hash.match(/#m(\d)a(\d)/);
+			if(hash && hash[1] && hash[2]) {
+				getScene(hash[2], hash[1]);
+			} else {
+				getMainPage();
+			}*/
+			getMainPage();
+			/* start */
 
 		</script>
 	</body>

@@ -2,7 +2,7 @@
 include('common.php');
 if(isset($_POST['id'])) {
 	$sid = $_POST['id'];
-	if(isset($_POST['cont'])) {
+	if(isset($_POST['cont']) && !empty($_POST['cont'])) {
 		$cont = $_POST['cont'];
 		$sql = "INSERT INTO action (sid,cont) VALUES ('$sid','$cont')";
 		$result = mysql_query($sql);
