@@ -10,7 +10,8 @@
 				overflow: hidden;
 				margin: 20px 10px;
 			}
-			.node .scene {
+			.node .scene,
+			.node .main {
 				border: 1px solid #ccc;
 				padding: 10px;
 				border-radius: 4px;
@@ -30,11 +31,14 @@
 		</style>
 	</head>
 	<body>
+		<ul class="trace">
+
+		</ul>
 		<div class="page"></div>
 		<!-- id cont tag time -->
 		<template id="main-tpl" class="tpl">
 			<div class="node" data-time="{#time}" data-json="">
-				<div class="scene" data-mid="{#id}" onclick='getScene(0, {#id})'>{#cont}</div>
+				<div class="main" data-mid="{#id}" data-aid="0">{#cont}</div>
 			</div>
 		</template>
 		<template id="add-main-tpl" class="tpl">
@@ -46,7 +50,7 @@
 		<!-- id mid aid cont time -->
 		<template id="scene-tpl" class="tpl">
 			<div class="node" data-time="{#time}">
-				<div class="scene" data-mid="{#mid}" onclick='getAction({#id})'>{#cont}</div>
+				<div class="scene" data-aid="{#id}" data-mid="0">{#cont}</div>
 				<div id="s{#id}" class="action"></div>
 			</div>
 		</template>
@@ -58,7 +62,7 @@
 		</template>
 		<!-- id sid cont time -->
 		<template id="action-tpl" class="tpl">
-			<span id="a{#id}" class="option" data-time="{#time}" data-sid="{#sid}" onclick='getScene({#id}, 0)'>{#cont}</span>
+			<span id="a{#id}" class="option" data-aid="{#id}">{#cont}</span>
 		</template>
 		<template id="add-action-tpl" class="tpl">
 			<div class="add">
@@ -85,19 +89,21 @@
 
 			/* dom control */
 			// messsssssss
-			/*document.querySelector(".page").addEventListener("click", getPage);
+			document.querySelector(".page").addEventListener("click", getPage);
 			function getPage(e) {
-				console.log(e.target.dataset);
-				switch(e.target.className) {
-					case "scene":
-
-					break;
+				var t = e.target;
+				switch(t.className) {
+					case "main":
 					case "option":
-
+						getScene(t.dataset.aid, t.dataset.mid, t.innerHTML);
+					break;
+					case "scene":
+						getAction(t.dataset.aid, t.innerHTML);
 					break;
 				}
-			}*/
-			/*HTMLElement.prototype.appendNodes = function(nodes) {
+			}
+
+			HTMLElement.prototype.appendNodes = function(nodes) {
 				var fragment = document.createDocumentFragment();
 				for(var i = 0; i < nodes.length; i++) {
 					fragment.appendChild(nodes[i].cloneNode(true));
@@ -109,7 +115,7 @@
 					div_tmp.innerHTML = html;
 				var nodes = div_tmp.childNodes; 
 				return nodes;
-			}*/
+			}
 			function tplEngine(tpl, data) {
 				var re = /{#(\w+)?}/;
 				while (match = re.exec(tpl)) {
@@ -158,7 +164,9 @@
 
 			/* scene */
 			var _mid = 0;	// setting _mid just make easy to search, event bind will solve it
-			function getScene(aid, mid) {
+			function getScene(aid, mid, cont) {
+				var aid = aid || 0;
+				var mid = mid || 0;
 				_mid = mid || _mid;
 				var data = "aid=" + aid + "&mid=" + _mid;
 				var add_data = [{'aid': aid, 'mid': _mid}];
@@ -166,6 +174,13 @@
 					// for search function
 					/* useless for the moment */
 					// window.location.hash = "m" + _mid + "a" + aid;
+
+					/* trace */
+					cont = cont || "";
+					var html = '<li>' + cont + '</li>';
+					document.querySelector(".trace").appendNodes(genNode(html));
+					/* trace */
+					
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
@@ -182,7 +197,7 @@
 				var data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont;
 				ajax("data/scene.php", data, function(data) {
 					if(data == 1) {
-						getScene(aid, mid);
+						getScene(aid, mid, cont);
 					}else{
 						alert("添加失败");
 					}
@@ -191,9 +206,14 @@
 			/* scene */
 
 			/* action */
-			function getAction(sid) {
+			function getAction(sid, cont) {
 				var add_data = [{'id': sid}];
 				ajax("data/action.php", "id=" + sid, function(data) {
+					/* trace */
+					cont = cont || "";
+					var html = '<li>' + cont + '</li>';
+					document.querySelector(".trace").appendNodes(genNode(html));
+					/* trace */
 					if(data) {
 						var action_tpl = document.querySelector('#action-tpl').innerHTML;
 						var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
@@ -212,7 +232,7 @@
 				var data = 'id=' + id + '&cont=' + cont;
 				ajax("data/action.php", data, function(data) {
 					if(data == 1) {
-						getAction(id);
+						getAction(id, cont);
 					}else{
 						alert("添加失败");
 					}
