@@ -92,14 +92,15 @@
 			/* ajax */
 
 			/* dom control */
-			// messsssssss
 			document.querySelector(".page").addEventListener("click", getPage);
 			function getPage(e) {
 				var t = e.target;
 				switch(t.className) {
 					case "main":
-					case "option":
 						getScene(t.dataset.aid, t.dataset.mid, t.innerHTML);
+					break;
+					case "option":
+						getScene(t.dataset.aid, t.dataset.mid, t.parentNode.previousSibling.previousSibling.innerHTML + "(" + t.innerHTML + ")");
 					break;
 					case "scene":
 						getAction(t.dataset.aid, t.innerHTML);
@@ -180,16 +181,13 @@
 					// window.location.hash = "m" + _mid + "a" + aid;
 
 					/* trace */
-					// cont = cont || "";
-					// var html = '<li>' + cont + '</li>';
-					// var html = '<li onclick="getTrace(' + aid + ',' + mid + ',\'' + cont + '\')">' + cont + '</li>';
-					// trace[cur_trace] = html;
 					trace[cur_trace] = {
 						'aid': aid,
 						'mid': mid,
-						'cont': cont
+						'cont': cont,
+						'cur': cur_trace
 					}
-					var trace_tpl = '<li onclick="getTrace({#aid},{#mid},' + cur_trace + ')">{#cont}</li>';
+					var trace_tpl = '<li onclick="getTrace({#aid},{#mid},{#cur})">{#cont}</li>';
 					cur_trace++;
 					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, trace);
 					/* trace */
@@ -252,10 +250,9 @@
 			/* action */
 
 			var trace = [];
-			trace[0] = "";
 			var cur_trace = 0;
 			function getTrace(aid, mid, cur) {
-				cur_trace = cur || cur_trace + 1;
+				cur_trace = cur + 1;
 
 				var aid = aid || 0;
 				var mid = mid || 0;
