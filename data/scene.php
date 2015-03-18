@@ -8,11 +8,7 @@ if(isset($_POST['cont']) && !empty($_POST['cont'])) {
 	$result = mysql_query($sql);
 	echo $result;
 } else {
-	if($aid) {
-		$sql = "SELECT * FROM scene WHERE aid='$aid' ORDER BY id DESC limit 10";
-	} else {
-		$sql = "SELECT * FROM scene WHERE mid='$mid' ORDER BY id DESC limit 10";
-	}
+	$sql = "SELECT * FROM scene WHERE mid='$mid' and aid='$aid' ORDER BY id DESC limit 10";
 	$result = mysql_query($sql);
 	while($row = mysql_fetch_array($result))
 	{

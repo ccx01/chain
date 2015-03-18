@@ -28,6 +28,10 @@
 				border-radius: 4px;
 				margin: 10px 10px 10px 0;
 			}
+			.trace,
+			.page {
+				float: left;
+			}
 		</style>
 	</head>
 	<body>
@@ -176,18 +180,27 @@
 					// window.location.hash = "m" + _mid + "a" + aid;
 
 					/* trace */
-					cont = cont || "";
-					var html = '<li>' + cont + '</li>';
-					document.querySelector(".trace").appendNodes(genNode(html));
+					// cont = cont || "";
+					// var html = '<li>' + cont + '</li>';
+					// var html = '<li onclick="getTrace(' + aid + ',' + mid + ',\'' + cont + '\')">' + cont + '</li>';
+					// trace[cur_trace] = html;
+					trace[cur_trace] = {
+						'aid': aid,
+						'mid': mid,
+						'cont': cont
+					}
+					var trace_tpl = '<li onclick="getTrace({#aid},{#mid},' + cur_trace + ')">{#cont}</li>';
+					cur_trace++;
+					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, trace);
 					/* trace */
-					
+
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
 						$page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
 					} else {
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-						$page.innerHTML = getHtml(add_scene_tpl, add_data);
+						$page.innerHTML = "目前没有场景" + getHtml(add_scene_tpl, add_data);
 					}
 				});
 			}
@@ -210,9 +223,7 @@
 				var add_data = [{'id': sid}];
 				ajax("data/action.php", "id=" + sid, function(data) {
 					/* trace */
-					cont = cont || "";
-					var html = '<li>' + cont + '</li>';
-					document.querySelector(".trace").appendNodes(genNode(html));
+
 					/* trace */
 					if(data) {
 						var action_tpl = document.querySelector('#action-tpl').innerHTML;
@@ -239,6 +250,33 @@
 				});
 			}
 			/* action */
+
+			var trace = [];
+			trace[0] = "";
+			var cur_trace = 0;
+			function getTrace(aid, mid, cur) {
+				cur_trace = cur || cur_trace + 1;
+
+				var aid = aid || 0;
+				var mid = mid || 0;
+				_mid = mid || _mid;
+				var data = "aid=" + aid + "&mid=" + _mid;
+				var add_data = [{'aid': aid, 'mid': _mid}];
+
+				ajax("data/scene.php", data, function(data) {
+					// for search function
+					/* useless for the moment */
+					// window.location.hash = "m" + _mid + "a" + aid;
+					if(data) {
+						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
+						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
+						$page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
+					} else {
+						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
+						$page.innerHTML = "目前没有场景" + getHtml(add_scene_tpl, add_data);
+					}
+				});
+			}
 
 			/* page fill */
 			/* start */
