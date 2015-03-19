@@ -13,6 +13,7 @@
 				border: 1px solid #ccc;
 				border-radius: 4px;
 				box-shadow: 0 3px 1px #ccc;
+				cursor: pointer;
 			}
 			.node .action {
 				overflow: hidden;
@@ -65,6 +66,7 @@
 				margin: 20px 10px;
 				background: #fefefe;
 				box-shadow: 0 5px 1px #999;
+				cursor: pointer;
 			}
 			@media screen and (max-width: 640px){
 				.trace span {
@@ -233,8 +235,12 @@
 						'cont': cont,
 						'cur': cur_trace
 					}
+					var new_trace = [];
+					for (var i = 0; i <= cur_trace; i++) {
+						new_trace[i] = trace[i];
+					}
 					var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
-					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, trace);
+					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
 					/* trace */
 
 					if(data) {
