@@ -9,12 +9,10 @@
 			.node {
 				overflow: hidden;
 				margin: 20px 10px;
-			}
-			.node .scene,
-			.node .main {
-				border: 1px solid #ccc;
 				padding: 10px;
+				border: 1px solid #ccc;
 				border-radius: 4px;
+				box-shadow: 0 3px 1px #ccc;
 			}
 			.node .action {
 				overflow: hidden;
@@ -26,18 +24,50 @@
 				border: 1px solid #eee;
 				padding: 10px;
 				border-radius: 4px;
-				margin: 10px 10px 10px 0;
+				margin: 10px 10px 0 0;
+			}
+			.add-main,
+			.add-scene {
+				position: fixed;
+				left: 5px;
+				bottom: 5px;
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 5px;
 			}
 			.trace,
 			.page {
-				float: left;
+				position: fixed;
+			}
+			.trace {
+				top: 0;
+				left: 0;
+				width: 10%;
+				height: 100%;
+				padding: 0;
+				margin: 0;
+				background: #363636;
+			}
+			.page {
+				top: 0;
+				left: 12%;
+				width: 85%;
+			}
+			.tpl {
+				display: none;
+			}
+			.box {
+				padding: 10px;
+				border: 1px solid #ccc;
+				border-radius: 5px;
+				margin: 20px 10px;
+				background: #fefefe;
+				box-shadow: 0 5px 1px #999;
 			}
 		</style>
 	</head>
 	<body>
-		<ul class="trace">
-
-		</ul>
+		<ul class="trace"></ul>
 		<div class="page"></div>
 		<!-- id cont tag time -->
 		<template id="main-tpl" class="tpl">
@@ -46,7 +76,7 @@
 			</div>
 		</template>
 		<template id="add-main-tpl" class="tpl">
-			<div class="add">
+			<div class="add add-main">
 				<input id="add-main" type="text">
 				<span onclick='addMain()'>添加主干</span>
 			</div>
@@ -59,7 +89,7 @@
 			</div>
 		</template>
 		<template id="add-scene-tpl" class="tpl">
-			<div class="add">
+			<div class="add add-scene">
 				<input id="add-scene{#mid}" type="text">
 				<span onclick='addScene({#aid}, {#mid})'>添加场景</span>
 			</div>
@@ -181,14 +211,14 @@
 					// window.location.hash = "m" + _mid + "a" + aid;
 
 					/* trace */
+					cur_trace++;
 					trace[cur_trace] = {
 						'aid': aid,
 						'mid': mid,
 						'cont': cont,
 						'cur': cur_trace
 					}
-					var trace_tpl = '<li onclick="getTrace({#aid},{#mid},{#cur})">{#cont}</li>';
-					cur_trace++;
+					var trace_tpl = '<li class="box" onclick="getTrace({#aid},{#mid},{#cur})">{#cont}</li>';
 					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, trace);
 					/* trace */
 
@@ -198,7 +228,7 @@
 						$page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
 					} else {
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-						$page.innerHTML = "目前没有场景" + getHtml(add_scene_tpl, add_data);
+						$page.innerHTML = "<p>目前没有场景</p>" + getHtml(add_scene_tpl, add_data);
 					}
 				});
 			}
@@ -251,8 +281,19 @@
 
 			var trace = [];
 			var cur_trace = 0;
+			trace[cur_trace] = {
+				'aid': 0,
+				'mid': 0,
+				'cont': '首页',
+				'cur': cur_trace
+			}
 			function getTrace(aid, mid, cur) {
-				cur_trace = cur + 1;
+				cur_trace = cur;
+
+				if(cur == 0) {
+					getMainPage();
+					return;
+				}
 
 				var aid = aid || 0;
 				var mid = mid || 0;
