@@ -1,14 +1,25 @@
 #chain
 
-##¹¦ÄÜÁÐ±í£º
-###Ñ­»·Á´
-###trace»ÒÁÁ
-###trace¼ÇÂ¼
-###ÓÃ»§¼ÇÂ¼
-###É¾³ý²Ù×÷
+##åŠŸèƒ½åˆ—è¡¨ï¼š
+###å¾ªçŽ¯é“¾
+###traceç°äº®
+###traceè®°å½•
+###ç”¨æˆ·è®°å½• --- done
+####-- priority 1 
+###åˆ é™¤æ“ä½œ
+####--->>> require trace
+###trace-url
 
-##¶¯»­Ð§¹û£º
-###sceneµ¯³ö
-###traceÊÕÈë£¬¸ßÁÁ
-###Ìí¼Ó¶¯×÷Ëõ·Å
-###Ìí¼Ó³¡¾°ÓëÌí¼ÓÐÐÎªÇø·Ö¿ª
+##åŠ¨ç”»æ•ˆæžœï¼š
+###function toggle
+###sceneå¼¹å‡º
+###traceæ”¶å…¥ï¼Œé«˜äº®
+####--->>> require trace
+###æ·»åŠ åŠ¨ä½œç¼©æ”¾
+###æ·»åŠ åœºæ™¯ä¸Žæ·»åŠ è¡Œä¸ºåŒºåˆ†å¼€
+###è§†è§‰å¯¼å›¾
+
+##ä¼˜åŒ–ï¼š
+###ç•Œé¢
+###é€»è¾‘
+###ä»£ç 

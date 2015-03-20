@@ -4,7 +4,15 @@ if(isset($_POST['id'])) {
 	$sid = $_POST['id'];
 	if(isset($_POST['cont']) && !empty($_POST['cont'])) {
 		$cont = $_POST['cont'];
-		$sql = "INSERT INTO action (sid,cont) VALUES ('$sid','$cont')";
+		if(!$_COOKIE['uid']) {
+			$name = $_POST['uid'];
+			$sql = "INSERT INTO user (name) VALUES ('$name')";
+			$result = mysql_query($sql);
+			$uid = mysql_insert_id();
+			setcookie('uid', $uid);
+		}
+		$uid = $_COOKIE['uid'];
+		$sql = "INSERT INTO action (sid,cont,uid) VALUES ('$sid','$cont','$uid')";
 		$result = mysql_query($sql);
 		echo $result;
 	} else {

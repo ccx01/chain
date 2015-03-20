@@ -34,12 +34,16 @@
 				padding: 10px;
 				border: 1px solid #ccc;
 				border-radius: 4px;
+				cursor: pointer;
 			}
-			.trace,
-			.page {
-				position: fixed;
+			.add span {
+				display: inline-block;
+				border: 1px solid #aaa;
+				padding: 5px;
+				box-shadow: 1px 1px 1px #ccc;
 			}
 			.trace {
+				position: fixed;
 				top: 0;
 				left: 0;
 				width: 20%;
@@ -52,6 +56,7 @@
 				display: none;
 			}
 			.page {
+				position: absolute;
 				top: 0;
 				left: 22%;
 				width: 75%;
@@ -80,7 +85,7 @@
 	</head>
 	<body>
 		<ul class="trace">
-			<li class="box" onclick="getTrace(0,0,0)"><span>首页</span></li>
+			<li class="box" onclick="getTrace(0,0,0)"><b>0</b><span>首页</span></li>
 		</ul>
 		<div class="page"></div>
 		<!-- id cont tag time -->
@@ -216,7 +221,7 @@
 
 			/* scene */
 			var _mid = 0;	// setting _mid just make easy to search, event bind will solve it
-			function getScene(aid, mid, cont) {
+			function getScene(aid, mid, cont, untrace) {
 				var aid = aid || 0;
 				var mid = mid || 0;
 				_mid = mid || _mid;
@@ -227,21 +232,23 @@
 					/* useless for the moment */
 					// window.location.hash = "m" + _mid + "a" + aid;
 
-					/* trace */
-					cur_trace++;
-					trace[cur_trace] = {
-						'aid': aid,
-						'mid': mid,
-						'cont': cont,
-						'cur': cur_trace
+					if(!untrace) {
+						/* trace */
+						cur_trace++;
+						trace[cur_trace] = {
+							'aid': aid,
+							'mid': mid,
+							'cont': cont,
+							'cur': cur_trace
+						}
+						var new_trace = [];
+						for (var i = 0; i <= cur_trace; i++) {
+							new_trace[i] = trace[i];
+						}
+						var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
+						document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
+						/* trace */
 					}
-					var new_trace = [];
-					for (var i = 0; i <= cur_trace; i++) {
-						new_trace[i] = trace[i];
-					}
-					var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
-					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
-					/* trace */
 
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
@@ -254,12 +261,20 @@
 				});
 			}
 
+			var _user;
 			function addScene(aid, mid) {
+				if(!_user) {
+					_user = prompt("随便输个id用来记录，后续添加登录功能","name");
+					if( !_user || _user == "name") {
+						alert("随便打几个字符就好");
+						return;
+					}
+				}
 				var cont = document.querySelector("#add-scene" + mid).value;
-				var data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont;
+				var data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&uid=' + _user;
 				ajax("data/scene.php", data, function(data) {
 					if(data == 1) {
-						getScene(aid, mid, cont);
+						getScene(aid, mid, cont, true);
 					}else{
 						alert("添加失败");
 					}
@@ -288,8 +303,15 @@
 			}
 
 			function addAction(id) {
+				if(!_user) {
+					_user = prompt("随便输个id用来记录，后续添加登录功能","name");
+					if( !_user || _user == "name") {
+						alert("随便打几个字符就好");
+						return;
+					}
+				}
 				var cont = document.querySelector("#add-action" + id).value;
-				var data = 'id=' + id + '&cont=' + cont;
+				var data = 'id=' + id + '&cont=' + cont + '&uid=' + _user;
 				ajax("data/action.php", data, function(data) {
 					if(data == 1) {
 						getAction(id, cont);

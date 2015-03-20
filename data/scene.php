@@ -4,7 +4,15 @@ $mid = $_POST['mid'] | 0;
 $aid = $_POST['aid'] | 0;
 if(isset($_POST['cont']) && !empty($_POST['cont'])) {
 	$cont = $_POST['cont'];
-	$sql = "INSERT INTO scene (mid,aid,cont) VALUES ('$mid','$aid','$cont')";
+	if(!$_COOKIE['uid']) {
+		$name = $_POST['uid'];
+		$sql = "INSERT INTO user (name) VALUES ('$name')";
+		$result = mysql_query($sql);
+		$uid = mysql_insert_id();
+		setcookie('uid', $uid);
+	}
+	$uid = $_COOKIE['uid'];
+	$sql = "INSERT INTO scene (mid,aid,cont,uid) VALUES ('$mid','$aid','$cont','$uid')";
 	$result = mysql_query($sql);
 	echo $result;
 } else {
