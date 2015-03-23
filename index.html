@@ -17,10 +17,13 @@
 			.node {
 				overflow: hidden;
 				margin: 20px 10px;
-				padding: 10px;
 				border: 1px solid #ccc;
 				border-radius: 4px;
 				box-shadow: 0 3px 1px #ccc;
+			}
+			.node .main,
+			.node .scene {
+				padding: 15px 10px;
 				cursor: pointer;
 			}
 			.node .action {
@@ -33,7 +36,8 @@
 				border: 1px solid #ddd;
 				padding: 10px;
 				border-radius: 4px;
-				margin: 10px 10px 0 0;
+				margin: 0 0 10px 10px;
+				cursor: pointer;
 			}
 			.add {
 				display: inline-block;
@@ -44,21 +48,26 @@
 				border-radius: 4px;
 				cursor: pointer;
 			}
-			.add span {
-				display: inline-block;
-				border: 1px solid #aaa;
-				padding: 5px;
-				box-shadow: 1px 1px 1px #ccc;
-			}
-			.trace {
+			.left {
 				position: fixed;
 				top: 0;
 				left: 0;
 				width: 20%;
 				height: 100%;
+				background: #363636;
+			}
+			.trace {
 				padding: 0;
 				margin: 0;
-				background: #363636;
+				overflow: auto;
+				height: 100%;
+			}
+			.trace li {
+				cursor: pointer;
+			}
+			.trace .active {
+				background: #9add73;
+				box-shadow: 0 2px 1px #999;
 			}
 			.trace b {
 				display: none;
@@ -79,7 +88,6 @@
 				margin: 20px 10px;
 				background: #fefefe;
 				box-shadow: 0 5px 1px #999;
-				cursor: pointer;
 			}
 			.user {
 				width: 100px;
@@ -89,7 +97,7 @@
 				background: #fff;
 				position: fixed;
 				bottom: 20px;
-				left: 20px;
+				right: 20px;
 			}
 
 			.popup {
@@ -98,15 +106,23 @@
 				height: 100%;
 				background: rgba(0,0,0,.2);
 			}
-			.popup .add {
+			.popup .box {
 				width: 50%;
 				margin: 10% 25%;
 				position: relative;
 			}
-			.add textarea {
+			.box textarea {
 				display: block;
 				margin: 10px 0;
 				width: 90%;
+				height: 70px;
+			}
+			#add-btn {
+				display: inline-block;
+				border: 1px solid #aaa;
+				padding: 5px;
+				box-shadow: 1px 1px 1px #ccc;
+				cursor: pointer;
 			}
 
 
@@ -117,18 +133,25 @@
 				.trace b {
 					display: block;
 				}
+				.user {
+					width: 30px;
+					height: 30px;
+				}
 			}
 		</style>
 	</head>
 	<body>
-		<ul class="trace">
-			<li class="box" onclick="getTrace(0,0,0)"><b>0</b><span>首页</span></li>
-		</ul>
+		<div class="left">
+			<ul class="trace">
+				<li class="box" onclick="getTrace(0,0,0)"><b>0</b><span>首页</span></li>
+			</ul>
+		</div>
 		<div class="page"></div>
 		<div class="user" onclick="alert('用户登录(未完成)');"></div>
 		<!-- template -->
 		<div class="popup tpl">
-			<div class="add box">
+			<div class="box">
+				<p class="title"></p>
 				<textarea id="add" type="text"></textarea>
 				<span id="add-btn">添加</span>
 			</div>
@@ -160,7 +183,7 @@
 			<span class="add" data-type="action" data-id="{#id}">+</span>
 		</template>
 		<template id="trace-tpl" class="tpl">
-			<li class="box" onclick="getTrace({#aid},{#mid},{#cur})"><b>{#cur}</b><span>{#cont}</span></li>
+			<li class="box{#active}" onclick="getTrace({#aid},{#mid},{#cur})"><b>{#cur}</b><span>{#cont}</span></li>
 		</template>
 		<!-- template -->
 		<script>
@@ -180,6 +203,10 @@
 			/* ajax */
 
 			/* dom control */
+			var $add = document.querySelector("#add");
+			var $add_btn = document.querySelector("#add-btn");
+			var $popup = document.querySelector(".popup");
+			var $popup_title = $popup.querySelector(".title");
 			var $page = document.querySelector(".page");
 			$page.addEventListener("click", getPage);
 			function getPage(e) {
@@ -196,7 +223,7 @@
 						getAction(d.aid, t.innerHTML);
 					break;
 					case "add":
-						popup(d);
+						popup(t);
 					break;
 				}
 			}
@@ -232,9 +259,8 @@
 				return html;
 			}
 
-			var $add_btn = document.querySelector("#add-btn");
-			var $popup = document.querySelector(".popup");
-			function popup(data) {
+			function popup(t) {
+				var data = t.dataset;
 				switch(data.type) {
 					case "main":
 						$add_btn.onclick = function() {
@@ -243,12 +269,12 @@
 					break;
 					case "scene":
 						$add_btn.onclick = function() {
-							$add_btn.onclick = addScene(data.aid, data.mid);
+							addScene(data.aid, data.mid);
 						}
 					break;
 					case "action":
 						$add_btn.onclick = function() {
-							$add_btn.onclick = addAction(data.id);
+							addAction(data.id);
 						}
 					break;
 				}
@@ -273,11 +299,12 @@
 			}
 
 			function addMain() {
-				var cont = document.querySelector("#add").value;
+				var cont = $add.value;
 				var data = 'cont=' + cont;
 				ajax("data/main.php", data, function(data) {
 					if(data == 1) {
 						getMainPage();
+						$add.value = "";
 						$popup.style.display = "none";
 					}else{
 						alert("添加失败");
@@ -300,21 +327,8 @@
 					// window.location.hash = "m" + _mid + "a" + aid;
 
 					if(!untrace) {
-						/* trace */
 						cur_trace++;
-						trace[cur_trace] = {
-							'aid': aid,
-							'mid': mid,
-							'cont': cont,
-							'cur': cur_trace
-						}
-						var new_trace = [];
-						for (var i = 0; i <= cur_trace; i++) {
-							new_trace[i] = trace[i];
-						}
-						var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
-						document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
-						/* trace */
+						setTrace(aid, mid, cont, cur_trace)
 					}
 
 					if(data) {
@@ -337,11 +351,12 @@
 						return;
 					}
 				}*/
-				var cont = document.querySelector("#add").value;
+				var cont = $add.value;
 				var data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&uid=' + _user;
 				ajax("data/scene.php", data, function(data) {
 					if(data == 1) {
 						getScene(aid, mid, cont, true);
+						$add.value = "";
 						$popup.style.display = "none";
 					}else{
 						alert("添加失败");
@@ -354,9 +369,6 @@
 			function getAction(sid, cont) {
 				var add_data = [{'id': sid}];
 				ajax("data/action.php", "id=" + sid, function(data) {
-					/* trace */
-
-					/* trace */
 					if(data) {
 						var action_tpl = document.querySelector('#action-tpl').innerHTML;
 						var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
@@ -378,11 +390,12 @@
 						return;
 					}
 				}*/
-				var cont = document.querySelector("#add").value;
+				var cont = $add.value;
 				var data = 'id=' + id + '&cont=' + cont + '&uid=' + _user;
 				ajax("data/action.php", data, function(data) {
 					if(data == 1) {
 						getAction(id, cont);
+						$add.value = "";
 						$popup.style.display = "none";
 					}else{
 						alert("添加失败");
@@ -399,11 +412,32 @@
 				'cont': '首页',
 				'cur': 0
 			}
+			function setTrace(aid, mid, cont, cur_trace) {
+				trace[cur_trace] = {
+					'aid': aid,
+					'mid': mid,
+					'cont': cont,
+					'cur': cur_trace
+				}
+				var new_trace = [];
+				for (var i = 0; i <= cur_trace; i++) {
+					new_trace[i] = trace[i];
+					if(i == cur_trace) {
+						new_trace[i].active = " active";
+					} else {
+						new_trace[i].active = "";
+					}
+				}
+				var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
+				document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
+			}
 			function getTrace(aid, mid, cur) {
 				cur_trace = cur;
 
 				if(cur == 0) {
 					getMainPage();
+					document.querySelector(".trace .active").className = "box";
+					document.querySelectorAll(".trace .box")[0].className += " active";
 					return;
 				}
 
@@ -417,6 +451,8 @@
 					// for search function
 					/* useless for the moment */
 					// window.location.hash = "m" + _mid + "a" + aid;
+					document.querySelector(".trace .active").className = "box";
+					document.querySelectorAll(".trace .box")[cur_trace].className += " active";
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
