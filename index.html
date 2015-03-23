@@ -1,11 +1,19 @@
 <!DOCTYPE html>
 <html>
 	<head>
+    	<meta name="robots" content="all">
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<title>链式反应</title>
+		<meta name="mobile-agent" content="format=html5;url=http://ccx01.com">
+		<meta name="applicable-device" content="mobile">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no">
 		<meta name ="keywords" content="Sign,ccx01,sign,the day of sign,signXday,沙因,游戏,银河,宇宙,时间,链式反应">
 		<meta name="description" content="链式反应,计划通,链式问答具象化">
 		<style>
+			body {
+				margin: 0;
+				padding: 0;
+			}
 			.node {
 				overflow: hidden;
 				margin: 20px 10px;
@@ -22,7 +30,7 @@
 			.node .action .option,
 			.node .add {
 				float: left;
-				border: 1px solid #eee;
+				border: 1px solid #ddd;
 				padding: 10px;
 				border-radius: 4px;
 				margin: 10px 10px 0 0;
@@ -65,7 +73,7 @@
 				display: none;
 			}
 			.box {
-				padding: 10px;
+				padding: 20px;
 				border: 1px solid #ccc;
 				border-radius: 5px;
 				margin: 20px 10px;
@@ -73,6 +81,35 @@
 				box-shadow: 0 5px 1px #999;
 				cursor: pointer;
 			}
+			.user {
+				width: 100px;
+				height: 100px;
+				border-radius: 50%;
+				box-shadow: 0 0 3px #aaa;
+				background: #fff;
+				position: fixed;
+				bottom: 20px;
+				left: 20px;
+			}
+
+			.popup {
+				position: fixed;
+				width: 100%;
+				height: 100%;
+				background: rgba(0,0,0,.2);
+			}
+			.popup .add {
+				width: 50%;
+				margin: 10% 25%;
+				position: relative;
+			}
+			.add textarea {
+				display: block;
+				margin: 10px 0;
+				width: 90%;
+			}
+
+
 			@media screen and (max-width: 640px){
 				.trace span {
 					display: none;
@@ -88,40 +125,39 @@
 			<li class="box" onclick="getTrace(0,0,0)"><b>0</b><span>首页</span></li>
 		</ul>
 		<div class="page"></div>
+		<div class="user" onclick="alert('用户登录(未完成)');"></div>
+		<!-- template -->
+		<div class="popup tpl">
+			<div class="add box">
+				<textarea id="add" type="text"></textarea>
+				<span id="add-btn">添加</span>
+			</div>
+		</div>
 		<!-- id cont tag time -->
 		<template id="main-tpl" class="tpl">
-			<div class="node" data-time="{#time}" data-json="">
+			<div class="node">
 				<div class="main" data-mid="{#id}" data-aid="0">{#cont}</div>
 			</div>
 		</template>
 		<template id="add-main-tpl" class="tpl">
-			<div class="add add-main">
-				<input id="add-main" type="text">
-				<span onclick='addMain()'>添加主干</span>
-			</div>
+			<span class="add" data-type="main">添加主干</span>
 		</template>
 		<!-- id mid aid cont time -->
 		<template id="scene-tpl" class="tpl">
-			<div class="node" data-time="{#time}">
-				<div class="scene" data-aid="{#id}" data-mid="0">{#cont}</div>
+			<div class="node">
+				<div class="scene" data-aid="{#id}" data-mid="{#mid}">{#cont}</div>
 				<div id="s{#id}" class="action"></div>
 			</div>
 		</template>
 		<template id="add-scene-tpl" class="tpl">
-			<div class="add add-scene">
-				<input id="add-scene{#mid}" type="text">
-				<span onclick='addScene({#aid}, {#mid})'>添加场景</span>
-			</div>
+			<span class="add" data-type="scene" data-aid="{#aid}" data-mid="{#mid}">添加场景</span>
 		</template>
 		<!-- id sid cont time -->
 		<template id="action-tpl" class="tpl">
 			<span id="a{#id}" class="option" data-aid="{#id}">{#cont}</span>
 		</template>
 		<template id="add-action-tpl" class="tpl">
-			<div class="add">
-				<input id="add-action{#id}" type="text">
-				<span onclick='addAction({#id})'>添加行为</span>
-			</div>
+			<span class="add" data-type="action" data-id="{#id}">+</span>
 		</template>
 		<template id="trace-tpl" class="tpl">
 			<li class="box" onclick="getTrace({#aid},{#mid},{#cur})"><b>{#cur}</b><span>{#cont}</span></li>
@@ -144,18 +180,23 @@
 			/* ajax */
 
 			/* dom control */
-			document.querySelector(".page").addEventListener("click", getPage);
+			var $page = document.querySelector(".page");
+			$page.addEventListener("click", getPage);
 			function getPage(e) {
 				var t = e.target;
+				var d = t.dataset;
 				switch(t.className) {
 					case "main":
-						getScene(t.dataset.aid, t.dataset.mid, t.innerHTML);
+						getScene(d.aid, d.mid, t.innerHTML);
 					break;
 					case "option":
-						getScene(t.dataset.aid, t.dataset.mid, t.parentNode.previousSibling.previousSibling.innerHTML + "(" + t.innerHTML + ")");
+						getScene(d.aid, d.mid, t.parentNode.previousSibling.previousSibling.innerHTML + "(" + t.innerHTML + ")");
 					break;
 					case "scene":
-						getAction(t.dataset.aid, t.innerHTML);
+						getAction(d.aid, t.innerHTML);
+					break;
+					case "add":
+						popup(d);
 					break;
 				}
 			}
@@ -183,7 +224,6 @@
 			/* dom control */
 
 			/* page fill */
-			var $page = document.querySelector(".page");
 			function getHtml(tpl, data) {
 				var html = "";
 				for (var i = 0; i < data.length; i++) {
@@ -191,6 +231,32 @@
 				}
 				return html;
 			}
+
+			var $add_btn = document.querySelector("#add-btn");
+			var $popup = document.querySelector(".popup");
+			function popup(data) {
+				switch(data.type) {
+					case "main":
+						$add_btn.onclick = function() {
+							addMain();
+						}
+					break;
+					case "scene":
+						$add_btn.onclick = function() {
+							$add_btn.onclick = addScene(data.aid, data.mid);
+						}
+					break;
+					case "action":
+						$add_btn.onclick = function() {
+							$add_btn.onclick = addAction(data.id);
+						}
+					break;
+				}
+				$popup.style.display = "block";
+			}
+			$popup.addEventListener("click", function(e) {
+				(/popup/.test(e.target.className)) && (this.style.display = "none");
+			});
 
 			/* main */
 			function getMainPage() {
@@ -207,11 +273,12 @@
 			}
 
 			function addMain() {
-				var cont = document.querySelector("#add-main").value;
+				var cont = document.querySelector("#add").value;
 				var data = 'cont=' + cont;
 				ajax("data/main.php", data, function(data) {
 					if(data == 1) {
 						getMainPage();
+						$popup.style.display = "none";
 					}else{
 						alert("添加失败");
 					}
@@ -261,20 +328,21 @@
 				});
 			}
 
-			var _user;
+			var _user = 0;
 			function addScene(aid, mid) {
-				if(!_user) {
+				/*if(!_user) {
 					_user = prompt("随便输个id用来记录，后续添加登录功能","name");
 					if( !_user || _user == "name") {
 						alert("随便打几个字符就好");
 						return;
 					}
-				}
-				var cont = document.querySelector("#add-scene" + mid).value;
+				}*/
+				var cont = document.querySelector("#add").value;
 				var data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&uid=' + _user;
 				ajax("data/scene.php", data, function(data) {
 					if(data == 1) {
 						getScene(aid, mid, cont, true);
+						$popup.style.display = "none";
 					}else{
 						alert("添加失败");
 					}
@@ -303,18 +371,19 @@
 			}
 
 			function addAction(id) {
-				if(!_user) {
+				/*if(!_user) {
 					_user = prompt("随便输个id用来记录，后续添加登录功能","name");
 					if( !_user || _user == "name") {
 						alert("随便打几个字符就好");
 						return;
 					}
-				}
-				var cont = document.querySelector("#add-action" + id).value;
+				}*/
+				var cont = document.querySelector("#add").value;
 				var data = 'id=' + id + '&cont=' + cont + '&uid=' + _user;
 				ajax("data/action.php", data, function(data) {
 					if(data == 1) {
 						getAction(id, cont);
+						$popup.style.display = "none";
 					}else{
 						alert("添加失败");
 					}

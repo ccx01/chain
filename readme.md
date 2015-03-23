@@ -13,6 +13,7 @@
 ##动画效果：
 ###function toggle
 ###scene弹出
+#### add popup
 ###trace收入，高亮
 ####--->>> require trace
 ###添加动作缩放

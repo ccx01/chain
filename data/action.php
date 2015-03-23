@@ -5,7 +5,8 @@ if(isset($_POST['id'])) {
 	if(isset($_POST['cont']) && !empty($_POST['cont'])) {
 		$cont = $_POST['cont'];
 		if(!$_COOKIE['uid']) {
-			$name = $_POST['uid'];
+			// $name = $_POST['uid'];
+			$name = "u".time();
 			$sql = "INSERT INTO user (name) VALUES ('$name')";
 			$result = mysql_query($sql);
 			$uid = mysql_insert_id();
