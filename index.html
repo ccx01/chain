@@ -214,7 +214,7 @@
 		<!-- id mid aid cont time -->
 		<template id="scene-tpl" class="tpl">
 			<div class="node">
-				<div class="scene" data-aid="{#id}" data-mid="{#mid}">{#cont}</div>
+				<div class="scene" data-sid="{#id}" data-mid="{#mid}">{#cont}</div>
 				<div id="s{#id}" class="action"></div>
 			</div>
 		</template>
@@ -256,6 +256,8 @@
 			var $popup_len = $popup.querySelector(".length");
 			var $page = document.querySelector(".page");
 			$page.addEventListener("click", getPage);
+
+			var cur_path = 0;
 			function getPage(e) {
 				if(document.body.className == "ex") {
 					document.body.className = "";
@@ -266,13 +268,17 @@
 				switch(t.className) {
 					case "main":
 						getScene(d.aid, d.mid, t.innerHTML, 0);
+						path.main = d.mid;
+					break;
+					case "scene":
+						getAction(d.sid, t.innerHTML);
+						path.scene[cur_path] = d.sid;
 					break;
 					case "option":
 						var $scene = t.parentNode.parentNode.querySelector(".scene");
-						getScene(d.aid, $scene.dataset.mid, $scene.innerHTML + "(" + t.innerHTML + ")", $scene.dataset.aid);
-					break;
-					case "scene":
-						getAction(d.aid, t.innerHTML);
+						getScene(d.aid, $scene.dataset.mid, $scene.innerHTML + "(" + t.innerHTML + ")", $scene.dataset.sid);
+						path.action[cur_path] = d.aid;
+						cur_path++;
 					break;
 					case "add":
 						popup(t);
@@ -382,7 +388,7 @@
 				var add_data = [{'aid': aid, 'mid': mid}];
 				ajax("data/scene.php", data, function(data) {
 					cur_trace++;
-					setTrace(aid, sid, cont, cur_trace);
+					setTrace(aid, mid, sid, cont, cur_trace);
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
@@ -476,6 +482,11 @@
 			/* action */
 
 			/**** trace ****/
+			var path = {
+				"main": 0,
+				"scene": [],
+				"action": []
+			}
 			var trace = [];
 			var cur_trace = 0;
 			trace[0] = {
@@ -485,10 +496,11 @@
 				'cont': '首页',
 				'cur': 0
 			}
-			function setTrace(aid, sid, cont, cur_trace) {
+			function setTrace(aid, mid, sid, cont, cur_trace) {
 				trace[cur_trace] = {
 					'aid': aid,
 					'sid': sid,
+					'mid': mid,
 					'cont': cont,
 					'cur': cur_trace
 				}
