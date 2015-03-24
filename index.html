@@ -89,7 +89,7 @@
 				background: #fefefe;
 				box-shadow: 0 5px 1px #999;
 			}
-			.user {
+			.expand {
 				width: 100px;
 				height: 100px;
 				border-radius: 50%;
@@ -97,7 +97,8 @@
 				background: #fff;
 				position: fixed;
 				bottom: 20px;
-				right: 20px;
+				left: 20%;
+				margin-left: -50px;
 			}
 
 			.popup {
@@ -124,7 +125,16 @@
 				box-shadow: 1px 1px 1px #ccc;
 				cursor: pointer;
 			}
-
+			.ex .left {
+				width: 75%;
+			}
+			.ex .page {
+				left: 77%;
+				width: 20%;
+			}
+			.ex .expand {
+				left: 75%;
+			}
 
 			@media screen and (max-width: 640px){
 				.trace span {
@@ -133,9 +143,23 @@
 				.trace b {
 					display: block;
 				}
-				.user {
+				.expand {
 					width: 30px;
 					height: 30px;
+					margin-left: -15px;
+				}
+				.ex .trace span {
+					display: block;
+				}
+				.ex .trace b {
+					display: none;
+				}
+				.ex .node {
+					white-space: nowrap;
+				}
+				.ex .action,
+				.ex .add {
+					display: none;
 				}
 			}
 		</style>
@@ -147,12 +171,14 @@
 			</ul>
 		</div>
 		<div class="page"></div>
+		<div class="expand"></div>
 		<div class="user" onclick="alert('用户登录(未完成)');"></div>
 		<!-- template -->
 		<div class="popup tpl">
 			<div class="box">
-				<p class="title"></p>
+				<p class="tip"></p>
 				<textarea id="add" type="text"></textarea>
+				<p class="length"></p>
 				<span id="add-btn">添加</span>
 			</div>
 		</div>
@@ -163,7 +189,7 @@
 			</div>
 		</template>
 		<template id="add-main-tpl" class="tpl">
-			<span class="add" data-type="main">添加主干</span>
+			<span class="add" data-type="main">没有你想了解的问题？点击这里进行提问吧</span>
 		</template>
 		<!-- id mid aid cont time -->
 		<template id="scene-tpl" class="tpl">
@@ -206,10 +232,15 @@
 			var $add = document.querySelector("#add");
 			var $add_btn = document.querySelector("#add-btn");
 			var $popup = document.querySelector(".popup");
-			var $popup_title = $popup.querySelector(".title");
+			var $popup_tip = $popup.querySelector(".tip");
+			var $popup_len = $popup.querySelector(".length");
 			var $page = document.querySelector(".page");
 			$page.addEventListener("click", getPage);
 			function getPage(e) {
+				if(document.body.className == "ex") {
+					document.body.className = "";
+					return;
+				}
 				var t = e.target;
 				var d = t.dataset;
 				switch(t.className) {
@@ -263,26 +294,33 @@
 				var data = t.dataset;
 				switch(data.type) {
 					case "main":
+						$popup_tip.innerHTML = "问题请在100字内描述完";
 						$add_btn.onclick = function() {
 							addMain();
 						}
 					break;
 					case "scene":
+						$popup_tip.innerHTML = "场景描述50字就够了";
 						$add_btn.onclick = function() {
 							addScene(data.aid, data.mid);
 						}
 					break;
 					case "action":
+						$popup_tip.innerHTML = "10字以内";
 						$add_btn.onclick = function() {
 							addAction(data.id);
 						}
 					break;
 				}
+				$popup_len.innerHTML = "已输入0字";
 				$popup.style.display = "block";
 			}
 			$popup.addEventListener("click", function(e) {
 				(/popup/.test(e.target.className)) && (this.style.display = "none");
 			});
+			$add.onkeyup = function() {
+				$popup_len.innerHTML = "已输入" + $add.value.length + "字";
+			}
 
 			/* main */
 			function getMainPage() {
@@ -300,6 +338,10 @@
 
 			function addMain() {
 				var cont = $add.value;
+				if(cont.length > 100) {
+					alert("超过100字了，精简一下吧");
+					return;
+				}
 				var data = 'cont=' + cont;
 				ajax("data/main.php", data, function(data) {
 					if(data == 1) {
@@ -352,6 +394,10 @@
 					}
 				}*/
 				var cont = $add.value;
+				if(cont.length > 50) {
+					alert("超过50字了，精简一下吧");
+					return;
+				}
 				var data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&uid=' + _user;
 				ajax("data/scene.php", data, function(data) {
 					if(data == 1) {
@@ -391,6 +437,10 @@
 					}
 				}*/
 				var cont = $add.value;
+				if(cont.length > 10) {
+					alert("超过10字了，精简一下吧");
+					return;
+				}
 				var data = 'id=' + id + '&cont=' + cont + '&uid=' + _user;
 				ajax("data/action.php", data, function(data) {
 					if(data == 1) {
@@ -463,6 +513,16 @@
 					}
 				});
 			}
+
+			/**** advance ****/
+			document.querySelector(".expand").onclick = function() {
+				if(document.body.className == "ex") {
+					document.body.className = "";
+				} else {
+					document.body.className = "ex";
+				}
+			}
+			/**** advance ****/
 
 			/* page fill */
 			/* start */
