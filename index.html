@@ -90,15 +90,16 @@
 				box-shadow: 0 5px 1px #999;
 			}
 			.expand {
-				width: 100px;
-				height: 100px;
-				border-radius: 50%;
-				box-shadow: 0 0 3px #aaa;
-				background: #fff;
+				width: 30px;
+				height: 60px;
+				line-height: 60px;
+				font-size: 60px;
+				color: #fff;
+				background: #363636;
 				position: fixed;
 				bottom: 20px;
 				left: 20%;
-				margin-left: -50px;
+				cursor: pointer;
 			}
 
 			.popup {
@@ -135,7 +136,16 @@
 			.ex .expand {
 				left: 75%;
 			}
-
+			.user {
+				width: 100px;
+				height: 100px;
+				border-radius: 50%;
+				box-shadow: 0 0 6px #aaa;
+				background: #fff;
+				position: fixed;
+				bottom: 20px;
+				right: 20px;
+			}
 			@media screen and (max-width: 640px){
 				.trace span {
 					display: none;
@@ -144,9 +154,10 @@
 					display: block;
 				}
 				.expand {
-					width: 30px;
+					width: 15px;
 					height: 30px;
-					margin-left: -15px;
+					line-height: 30px;
+					font-size: 30px;
 				}
 				.ex .trace span {
 					display: block;
@@ -161,17 +172,21 @@
 				.ex .add {
 					display: none;
 				}
+				.ex .user {
+					width: 30px;
+					height: 30px;
+				}
 			}
 		</style>
 	</head>
 	<body>
 		<div class="left">
 			<ul class="trace">
-				<li class="box" onclick="getTrace(0,0,0)"><b>0</b><span>首页</span></li>
+				<li class="box active" onclick="getTrace(0,0,0)"><b>0</b><span>首页</span></li>
 			</ul>
 		</div>
 		<div class="page"></div>
-		<div class="expand"></div>
+		<div class="expand">></div>
 		<div class="user" onclick="alert('用户登录(未完成)');"></div>
 		<!-- template -->
 		<div class="popup tpl">
@@ -180,6 +195,11 @@
 				<textarea id="add" type="text"></textarea>
 				<p class="length"></p>
 				<span id="add-btn">添加</span>
+			</div>
+		</div>
+		<div class="user tpl">
+			<div class="box">
+
 			</div>
 		</div>
 		<!-- id cont tag time -->
@@ -245,10 +265,11 @@
 				var d = t.dataset;
 				switch(t.className) {
 					case "main":
-						getScene(d.aid, d.mid, t.innerHTML);
+						getScene(d.aid, d.mid, t.innerHTML, 0);
 					break;
 					case "option":
-						getScene(d.aid, d.mid, t.parentNode.previousSibling.previousSibling.innerHTML + "(" + t.innerHTML + ")");
+						var $scene = t.parentNode.parentNode.querySelector(".scene");
+						getScene(d.aid, $scene.dataset.mid, $scene.innerHTML + "(" + t.innerHTML + ")", $scene.dataset.aid);
 					break;
 					case "scene":
 						getAction(d.aid, t.innerHTML);
@@ -356,23 +377,12 @@
 			/* main */
 
 			/* scene */
-			var _mid = 0;	// setting _mid just make easy to search, event bind will solve it
-			function getScene(aid, mid, cont, untrace) {
-				var aid = aid || 0;
-				var mid = mid || 0;
-				_mid = mid || _mid;
-				var data = "aid=" + aid + "&mid=" + _mid;
-				var add_data = [{'aid': aid, 'mid': _mid}];
+			function getScene(aid, mid, cont, sid) {
+				var data = "aid=" + aid + "&mid=" + mid;
+				var add_data = [{'aid': aid, 'mid': mid}];
 				ajax("data/scene.php", data, function(data) {
-					// for search function
-					/* useless for the moment */
-					// window.location.hash = "m" + _mid + "a" + aid;
-
-					if(!untrace) {
-						cur_trace++;
-						setTrace(aid, mid, cont, cur_trace)
-					}
-
+					cur_trace++;
+					setTrace(aid, sid, cont, cur_trace);
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
@@ -398,10 +408,21 @@
 					alert("超过50字了，精简一下吧");
 					return;
 				}
-				var data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&uid=' + _user;
-				ajax("data/scene.php", data, function(data) {
+				var post_data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&uid=' + _user;
+				ajax("data/scene.php", post_data, function(data) {
 					if(data == 1) {
-						getScene(aid, mid, cont, true);
+						var post_data = "aid=" + aid + "&mid=" + mid;
+						var add_data = [{'aid': aid, 'mid': mid}];
+						ajax("data/scene.php", post_data, function(data) {
+							if(data) {
+								var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
+								var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
+								$page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
+							} else {
+								var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
+								$page.innerHTML = "<p>目前没有场景</p>" + getHtml(add_scene_tpl, add_data);
+							}
+						});
 						$add.value = "";
 						$popup.style.display = "none";
 					}else{
@@ -454,22 +475,25 @@
 			}
 			/* action */
 
+			/**** trace ****/
 			var trace = [];
 			var cur_trace = 0;
 			trace[0] = {
 				'aid': 0,
 				'mid': 0,
+				'sid': 0,
 				'cont': '首页',
 				'cur': 0
 			}
-			function setTrace(aid, mid, cont, cur_trace) {
+			function setTrace(aid, sid, cont, cur_trace) {
 				trace[cur_trace] = {
 					'aid': aid,
-					'mid': mid,
+					'sid': sid,
 					'cont': cont,
 					'cur': cur_trace
 				}
 				var new_trace = [];
+				var path = "s";
 				for (var i = 0; i <= cur_trace; i++) {
 					new_trace[i] = trace[i];
 					if(i == cur_trace) {
@@ -477,9 +501,14 @@
 					} else {
 						new_trace[i].active = "";
 					}
+					path += "_" + new_trace[i].sid;
 				}
 				var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
 				document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
+
+				// for search function
+				/* difficult */
+				window.location.hash = path;
 			}
 			function getTrace(aid, mid, cur) {
 				cur_trace = cur;
@@ -491,16 +520,10 @@
 					return;
 				}
 
-				var aid = aid || 0;
-				var mid = mid || 0;
-				_mid = mid || _mid;
-				var data = "aid=" + aid + "&mid=" + _mid;
-				var add_data = [{'aid': aid, 'mid': _mid}];
+				var post_data = "aid=" + aid + "&mid=" + mid;
+				var add_data = [{'aid': aid, 'mid': mid}];
 
-				ajax("data/scene.php", data, function(data) {
-					// for search function
-					/* useless for the moment */
-					// window.location.hash = "m" + _mid + "a" + aid;
+				ajax("data/scene.php", post_data, function(data) {
 					document.querySelector(".trace .active").className = "box";
 					document.querySelectorAll(".trace .box")[cur_trace].className += " active";
 					if(data) {
@@ -514,6 +537,18 @@
 				});
 			}
 
+			/**** user ****/
+			function userTrace() {
+				trace[0] = {
+					'aid': 0,
+					'mid': 0,
+					'sid': 0,
+					'cont': '首页',
+					'cur': 0
+				}
+			}
+			/**** user ****/
+
 			/**** advance ****/
 			document.querySelector(".expand").onclick = function() {
 				if(document.body.className == "ex") {
@@ -524,9 +559,10 @@
 			}
 			/**** advance ****/
 
-			/* page fill */
 			/* start */
-			/* useless for the moment */
+			var mark = window.location.hash.replace(/#s/,"").split("_");
+			for (var i = 0; i < mark.length; i++) {
+			}
 			/*var hash = window.location.hash.match(/#m(\d)a(\d)/);
 			if(hash && hash[1] && hash[2]) {
 				getScene(hash[2], hash[1]);
