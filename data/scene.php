@@ -1,9 +1,9 @@
 ﻿<?php
 include('common.php');
-$mid = $_POST['mid'] | 0;
-$aid = $_POST['aid'] | 0;
+$mid = strip_tags($_POST['mid']) | 0;
+$aid = strip_tags($_POST['aid']) | 0;
 if(isset($_POST['cont']) && !empty($_POST['cont'])) {
-	$cont = $_POST['cont'];
+	$cont = strip_tags($_POST['cont']);
 	if(!$_COOKIE['uid']) {
 		// $name = $_POST['uid'];
 		$name = "u".time();

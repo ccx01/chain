@@ -2,7 +2,7 @@
 include('common.php');
 
 if(isset($_POST['cont']) && !empty($_POST['cont'])) {
-	$cont = $_POST['cont'];
+	$cont = strip_tags($_POST['cont']);
 	if(!$_COOKIE['uid']) {
 		// $name = $_POST['uid'];
 		$name = "u".time();
