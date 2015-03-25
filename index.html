@@ -159,6 +159,10 @@
 					line-height: 30px;
 					font-size: 30px;
 				}
+				.user {
+					width: 30px;
+					height: 30px;
+				}
 				.ex .trace span {
 					display: block;
 				}
@@ -172,18 +176,14 @@
 				.ex .add {
 					display: none;
 				}
-				.ex .user {
-					width: 30px;
-					height: 30px;
-				}
 			}
 		</style>
 	</head>
 	<body>
 		<div class="left">
-			<ul class="trace">
-				<li class="box active" onclick="getTrace(0,0,0)"><b>0</b><span>首页</span></li>
-			</ul>
+			<div class="box" onclick="getMainPage();">首页</div>
+			<div class="main"></div>
+			<ul class="trace"></ul>
 		</div>
 		<div class="page"></div>
 		<div class="expand">></div>
@@ -209,7 +209,7 @@
 			</div>
 		</template>
 		<template id="add-main-tpl" class="tpl">
-			<span class="add" data-type="main">没有你想了解的问题？点击这里进行提问吧</span>
+			<span class="add" data-type="main">添加主题</span>
 		</template>
 		<!-- id mid aid cont time -->
 		<template id="scene-tpl" class="tpl">
@@ -257,7 +257,6 @@
 			var $page = document.querySelector(".page");
 			$page.addEventListener("click", getPage);
 
-			var cur_path = 0;
 			function getPage(e) {
 				if(document.body.className == "ex") {
 					document.body.className = "";
@@ -267,18 +266,15 @@
 				var d = t.dataset;
 				switch(t.className) {
 					case "main":
+						// mainToScene(d.aid, d.mid, t.innerHTML);
 						getScene(d.aid, d.mid, t.innerHTML, 0);
-						path.main = d.mid;
 					break;
 					case "scene":
 						getAction(d.sid, t.innerHTML);
-						path.scene[cur_path] = d.sid;
 					break;
 					case "option":
 						var $scene = t.parentNode.parentNode.querySelector(".scene");
 						getScene(d.aid, $scene.dataset.mid, $scene.innerHTML + "(" + t.innerHTML + ")", $scene.dataset.sid);
-						path.action[cur_path] = d.aid;
-						cur_path++;
 					break;
 					case "add":
 						popup(t);
@@ -352,6 +348,7 @@
 			/* main */
 			function getMainPage() {
 				ajax("data/main.php", "", function(data) {
+					path.cur = 0;
 					if(data) {
 						var main_tpl = document.querySelector('#main-tpl').innerHTML;
 						var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
@@ -383,12 +380,12 @@
 			/* main */
 
 			/* scene */
+
 			function getScene(aid, mid, cont, sid) {
-				var data = "aid=" + aid + "&mid=" + mid;
+				var post_data = "aid=" + aid + "&mid=" + mid;
 				var add_data = [{'aid': aid, 'mid': mid}];
-				ajax("data/scene.php", data, function(data) {
-					cur_trace++;
-					setTrace(aid, mid, sid, cont, cur_trace);
+				ajax("data/scene.php", post_data, function(data) {
+					setTrace(aid, mid, sid, cont);
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
@@ -483,61 +480,47 @@
 
 			/**** trace ****/
 			var path = {
-				"main": 0,
-				"scene": [],
-				"action": []
+				"trace": [],
+				"cur": 0
 			}
-			var trace = [];
-			var cur_trace = 0;
-			trace[0] = {
-				'aid': 0,
-				'mid': 0,
-				'sid': 0,
-				'cont': '首页',
-				'cur': 0
-			}
-			function setTrace(aid, mid, sid, cont, cur_trace) {
-				trace[cur_trace] = {
-					'aid': aid,
-					'sid': sid,
-					'mid': mid,
-					'cont': cont,
-					'cur': cur_trace
-				}
+
+			function setTrace(aid, mid, sid, cont) {
+				path.trace[path.cur] = {};
+				path.trace[path.cur].sid = sid;
+				path.trace[path.cur].aid = aid;
+				path.trace[path.cur].cont = cont;
+				path.cur++;
+
 				var new_trace = [];
-				var path = "s";
-				for (var i = 0; i <= cur_trace; i++) {
-					new_trace[i] = trace[i];
-					if(i == cur_trace) {
+				for (var i = 0; i < path.cur; i++) {
+					new_trace[i] = path.trace[i];
+					new_trace[i].mid = mid;
+					new_trace[i].cur = i;
+					if(i == path.cur - 1) {
 						new_trace[i].active = " active";
 					} else {
 						new_trace[i].active = "";
 					}
-					path += "_" + new_trace[i].sid;
 				}
 				var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
 				document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
 
 				// for search function
 				/* difficult */
-				window.location.hash = path;
+				// window.location.hash = path;
 			}
 			function getTrace(aid, mid, cur) {
-				cur_trace = cur;
-
-				if(cur == 0) {
-					getMainPage();
-					document.querySelector(".trace .active").className = "box";
-					document.querySelectorAll(".trace .box")[0].className += " active";
-					return;
-				}
+				cur = cur || 0;
+				path.cur = cur + 1;
 
 				var post_data = "aid=" + aid + "&mid=" + mid;
 				var add_data = [{'aid': aid, 'mid': mid}];
 
 				ajax("data/scene.php", post_data, function(data) {
+
 					document.querySelector(".trace .active").className = "box";
-					document.querySelectorAll(".trace .box")[cur_trace].className += " active";
+					document.querySelectorAll(".trace .box")[cur].className = "box active";
+
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
@@ -548,18 +531,6 @@
 					}
 				});
 			}
-
-			/**** user ****/
-			function userTrace() {
-				trace[0] = {
-					'aid': 0,
-					'mid': 0,
-					'sid': 0,
-					'cont': '首页',
-					'cur': 0
-				}
-			}
-			/**** user ****/
 
 			/**** advance ****/
 			document.querySelector(".expand").onclick = function() {
