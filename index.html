@@ -182,7 +182,6 @@
 	<body>
 		<div class="left">
 			<div class="box" onclick="getMainPage();">首页</div>
-			<div class="main"></div>
 			<ul class="trace"></ul>
 		</div>
 		<div class="page"></div>
@@ -229,7 +228,7 @@
 			<span class="add" data-type="action" data-id="{#id}">+</span>
 		</template>
 		<template id="trace-tpl" class="tpl">
-			<li class="box{#active}" onclick="getTrace({#aid},{#mid},{#cur})"><b>{#cur}</b><span>{#cont}</span></li>
+			<li class="box{#active}" onclick="getTrace({#aid},{#mid},{#pos})"><b>{#pos}</b><span>{#cont}</span></li>
 		</template>
 		<!-- template -->
 		<script>
@@ -380,7 +379,6 @@
 			/* main */
 
 			/* scene */
-
 			function getScene(aid, mid, cont, sid) {
 				var post_data = "aid=" + aid + "&mid=" + mid;
 				var add_data = [{'aid': aid, 'mid': mid}];
@@ -486,16 +484,23 @@
 
 			function setTrace(aid, mid, sid, cont) {
 				path.trace[path.cur] = {};
+				path.trace[path.cur].mid = mid;
 				path.trace[path.cur].sid = sid;
 				path.trace[path.cur].aid = aid;
 				path.trace[path.cur].cont = cont;
 				path.cur++;
 
+
 				var new_trace = [];
+				var hash;
 				for (var i = 0; i < path.cur; i++) {
+					if(i == 0) {
+						hash = "m" + path.trace[i].mid;
+					} else {
+						hash += "s" + path.trace[i].sid + "_" + path.trace[i].aid;
+					}
 					new_trace[i] = path.trace[i];
-					new_trace[i].mid = mid;
-					new_trace[i].cur = i;
+					new_trace[i].pos = i;
 					if(i == path.cur - 1) {
 						new_trace[i].active = " active";
 					} else {
@@ -505,9 +510,7 @@
 				var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
 				document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
 
-				// for search function
-				/* difficult */
-				// window.location.hash = path;
+				window.location.hash = hash;
 			}
 			function getTrace(aid, mid, cur) {
 				cur = cur || 0;
@@ -517,6 +520,16 @@
 				var add_data = [{'aid': aid, 'mid': mid}];
 
 				ajax("data/scene.php", post_data, function(data) {
+
+					var hash;
+					for (var i = 0; i < path.cur; i++) {
+						if(i == 0) {
+							hash = "m" + path.trace[i].mid;
+						} else {
+							hash += "s" + path.trace[i].sid + "_" + path.trace[i].aid;
+						}
+					}
+					window.location.hash = hash;
 
 					document.querySelector(".trace .active").className = "box";
 					document.querySelectorAll(".trace .box")[cur].className = "box active";
@@ -546,12 +559,23 @@
 			var mark = window.location.hash.replace(/#s/,"").split("_");
 			for (var i = 0; i < mark.length; i++) {
 			}
-			/*var hash = window.location.hash.match(/#m(\d)a(\d)/);
-			if(hash && hash[1] && hash[2]) {
-				getScene(hash[2], hash[1]);
-			} else {
-				getMainPage();
-			}*/
+			var hash = window.location.hash.split("s");
+			var m = hash[0];
+			var req = {}
+			if(/#m\d+/.test(m)) {
+				req.mid = m.match(/#m(\d+)/)[1];
+				hash = hash.slice(1);
+			}
+			req.scene = [];
+			for (var i = 0; i < hash.length; i++) {
+				if(/(\d+)_(\d+)/.test(hash[i])) {
+					var trace = hash[i].match(/(\d+)_(\d+)/);
+					req.scene[i] = {}
+					req.scene[i].sid = trace[1];
+					req.scene[i].aid = trace[2];
+				}
+			}
+
 			getMainPage();
 			/* start */
 
