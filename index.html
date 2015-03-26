@@ -54,13 +54,12 @@
 				left: 0;
 				width: 20%;
 				height: 100%;
+				overflow: auto;
 				background: #363636;
 			}
 			.trace {
 				padding: 0;
 				margin: 0;
-				overflow: auto;
-				height: 100%;
 			}
 			.trace li {
 				cursor: pointer;
@@ -556,7 +555,30 @@
 			/**** advance ****/
 
 			/* start */
-			var mark = window.location.hash.replace(/#s/,"").split("_");
+			if(/#m/.test(window.location.hash)) {
+				getRecord();
+			}
+
+			function getRecord() {
+				var post_data = "hash=" + window.location.hash;
+				ajax("data/trace.php", post_data, function(data) {
+					path.trace = [];
+					path.cur = data.length;
+					for (var i = 0; i < path.cur; i++) {
+						path.trace[i] = data[i];
+						path.trace[i].pos = i;
+						if(i == path.cur - 1) {
+							path.trace[i].active = " active";
+						} else {
+							path.trace[i].active = "";
+						}
+					}
+
+					var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
+					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, path.trace);
+				});
+			}
+			/*var mark = window.location.hash.replace(/#s/,"").split("_");
 			for (var i = 0; i < mark.length; i++) {
 			}
 			var hash = window.location.hash.split("s");
@@ -574,7 +596,7 @@
 					req.scene[i].sid = trace[1];
 					req.scene[i].aid = trace[2];
 				}
-			}
+			}*/
 
 			getMainPage();
 			/* start */
