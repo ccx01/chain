@@ -24,6 +24,7 @@ if(isset($_POST['id'])) {
 			$arr[]  = array(
 				'id' => $row['id'],
 				'sid' => $row['sid'],
+				'rollback' => $row['rollback'],
 				'cont' => $row['cont'],
 				'time' => $row['time']
 			); 

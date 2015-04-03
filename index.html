@@ -39,6 +39,10 @@
 				margin: 0 0 10px 10px;
 				cursor: pointer;
 			}
+			.option:hover,
+			.add:hover {
+				background: #B0DAFF;
+			}
 			.add {
 				display: inline-block;
 				border-radius: 5px;
@@ -47,6 +51,29 @@
 				border: 1px solid #ccc;
 				border-radius: 4px;
 				cursor: pointer;
+			}
+			.nav {
+				position: fixed;
+				margin: 0;
+				padding: 0;
+				height: 60px;
+				width: 100%;
+				z-index: 99;
+				box-shadow: 0 3px 1px #aaa;
+				background: #fff;
+			}
+			.nav li {
+				display: inline;
+				padding: 10px;
+				border: 1px solid #ccc;
+				box-shadow: 1px 1px 3px #ccc;
+				border-radius: 4px;
+				line-height: 60px;
+				margin-left: 8px;
+				cursor: pointer;
+			}
+			.nav li:hover {
+				background: #B0DAFF;
 			}
 			.left {
 				position: fixed;
@@ -59,7 +86,7 @@
 			}
 			.trace {
 				padding: 0;
-				margin: 0;
+				margin-top: 80px;
 			}
 			.trace li {
 				cursor: pointer;
@@ -76,6 +103,9 @@
 				top: 0;
 				left: 22%;
 				width: 75%;
+				margin-top: 60px;
+				outline: none;
+				-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
 			}
 			.tpl {
 				display: none;
@@ -88,16 +118,17 @@
 				background: #fefefe;
 				box-shadow: 0 5px 1px #999;
 			}
-			.expand {
+			.arrow {
 				width: 30px;
 				height: 60px;
 				line-height: 60px;
-				font-size: 60px;
+				font-size: 20px;
 				color: #fff;
 				background: #363636;
-				position: fixed;
 				bottom: 20px;
 				left: 20%;
+				position: fixed;
+				text-align: center;
 				cursor: pointer;
 			}
 
@@ -109,7 +140,7 @@
 			}
 			.popup .box {
 				width: 50%;
-				margin: 10% 25%;
+				margin: 110px 25%;
 				position: relative;
 			}
 			.box textarea {
@@ -132,7 +163,7 @@
 				left: 77%;
 				width: 20%;
 			}
-			.ex .expand {
+			.ex .arrow {
 				left: 75%;
 			}
 			.user {
@@ -152,7 +183,7 @@
 				.trace b {
 					display: block;
 				}
-				.expand {
+				.arrow {
 					width: 15px;
 					height: 30px;
 					line-height: 30px;
@@ -179,13 +210,19 @@
 		</style>
 	</head>
 	<body>
-		<div class="left">
-			<div class="box" onclick="getMainPage();">首页</div>
-			<ul class="trace"></ul>
+		<ul class="nav">
+			<li onclick="getMainPage();">首页</li>
+			<li onclick="alert('直接分享当前地址，对方即可收到当前场景');">分享</li>
+			<li onclick="alert('用户登录(未完成)，当前数据随时会清空');">登录</li>
+			<li onclick="alert('没有使用帮助,动画手势陆续添加中')">?</li>
+		</ul>
+		<div class="stage">
+			<div class="left">
+				<ul class="trace"></ul>
+			</div>
+			<div class="page"></div>
+			<div class="arrow">></div>
 		</div>
-		<div class="page"></div>
-		<div class="expand">></div>
-		<div class="user" onclick="alert('用户登录(未完成)');"></div>
 		<!-- template -->
 		<div class="popup tpl">
 			<div class="box">
@@ -221,7 +258,7 @@
 		</template>
 		<!-- id sid cont time -->
 		<template id="action-tpl" class="tpl">
-			<span id="a{#id}" class="option" data-aid="{#id}">{#cont}</span>
+			<span id="a{#id}" class="option" data-aid="{#id}" data-rollback="{#rollback}">{#cont}</span>
 		</template>
 		<template id="add-action-tpl" class="tpl">
 			<span class="add" data-type="action" data-id="{#id}">+</span>
@@ -231,6 +268,10 @@
 		</template>
 		<!-- template -->
 		<script>
+			var dom = document.createElement('div');
+			if(!('webkitTransform' in dom.style)) {
+				alert("当前不支持该浏览器");
+			}
 			/* ajax */
 			function ajax(url, data, callback) {
 				var xmlhttp = new XMLHttpRequest();
@@ -256,6 +297,16 @@
 			$page.addEventListener("click", getPage);
 
 			function getPage(e) {
+				//search for parent node
+				/*var path = e.path;
+				for (var i = 0; i < e.path.length; i++) {
+					if(e.path[i].className == "node") {
+						path = e.path[i];
+						break;
+					}
+				}
+				console.log(path);*/
+
 				if(document.body.className == "ex") {
 					document.body.className = "";
 					return;
@@ -346,6 +397,7 @@
 			/* main */
 			function getMainPage() {
 				ajax("data/main.php", "", function(data) {
+					window.location.hash = "";
 					path.cur = 0;
 					if(data) {
 						var main_tpl = document.querySelector('#main-tpl').innerHTML;
@@ -379,7 +431,11 @@
 
 			/* scene */
 			function getScene(aid, mid, cont, sid) {
-				var post_data = "aid=" + aid + "&mid=" + mid;
+				if(sid) {
+					var post_data = "aid=" + aid ;
+				} else {
+					var post_data = "mid=" + mid;
+				}
 				var add_data = [{'aid': aid, 'mid': mid}];
 				ajax("data/scene.php", post_data, function(data) {
 					setTrace(aid, mid, sid, cont);
@@ -408,7 +464,8 @@
 					alert("超过50字了，精简一下吧");
 					return;
 				}
-				var post_data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&uid=' + _user;
+				var first = (aid == 0) ? 1 : 0;
+				var post_data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&first=' + first + '&uid=' + _user;
 				ajax("data/scene.php", post_data, function(data) {
 					if(data == 1) {
 						var post_data = "aid=" + aid + "&mid=" + mid;
@@ -545,7 +602,7 @@
 			}
 
 			/**** advance ****/
-			document.querySelector(".expand").onclick = function() {
+			document.querySelector(".arrow").onclick = function() {
 				if(document.body.className == "ex") {
 					document.body.className = "";
 				} else {
@@ -557,6 +614,8 @@
 			/* start */
 			if(/#m/.test(window.location.hash)) {
 				getRecord();
+			} else {
+				getMainPage();
 			}
 
 			function getRecord() {
@@ -573,7 +632,9 @@
 							path.trace[i].active = "";
 						}
 					}
-
+					var cur = path.cur - 1;
+					getTrace(path.trace[cur].aid, path.trace[cur].mid, cur);
+					document.body.className = "ex";
 					var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
 					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, path.trace);
 				});
@@ -598,7 +659,6 @@
 				}
 			}*/
 
-			getMainPage();
 			/* start */
 
 		</script>
