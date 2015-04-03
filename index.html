@@ -48,28 +48,8 @@
 				border-radius: 4px;
 				cursor: pointer;
 			}
-			.nav {
-				position: fixed;
-				margin: 0;
-				padding: 0;
-				height: 60px;
-				width: 100%;
-				z-index: 99;
-				box-shadow: 0 3px 1px #aaa;
-				background: #fff;
-			}
-			.nav li {
-				display: inline;
-				padding: 10px;
-				border: 1px solid #ccc;
-				box-shadow: 1px 1px 3px #ccc;
-				border-radius: 4px;
-				line-height: 60px;
-				margin-left: 8px;
-				cursor: pointer;
-			}
 			.left {
-				position: absolute;
+				position: fixed;
 				top: 0;
 				left: 0;
 				width: 20%;
@@ -79,7 +59,7 @@
 			}
 			.trace {
 				padding: 0;
-				margin-top: 80px;
+				margin: 0;
 			}
 			.trace li {
 				cursor: pointer;
@@ -96,7 +76,6 @@
 				top: 0;
 				left: 22%;
 				width: 75%;
-				margin-top: 60px;
 			}
 			.tpl {
 				display: none;
@@ -109,7 +88,7 @@
 				background: #fefefe;
 				box-shadow: 0 5px 1px #999;
 			}
-			.arrow {
+			.expand {
 				width: 30px;
 				height: 60px;
 				line-height: 60px;
@@ -153,7 +132,7 @@
 				left: 77%;
 				width: 20%;
 			}
-			.ex .arrow {
+			.ex .expand {
 				left: 75%;
 			}
 			.user {
@@ -173,7 +152,7 @@
 				.trace b {
 					display: block;
 				}
-				.arrow {
+				.expand {
 					width: 15px;
 					height: 30px;
 					line-height: 30px;
@@ -200,18 +179,13 @@
 		</style>
 	</head>
 	<body>
-		<ul class="nav">
-			<li onclick="getMainPage();">首页</li>
-			<li onclick="alert('直接分享当前地址，对方即可收到此路径');">分享</li>
-			<li onclick="alert('用户登录(未完成)');">登录</li>
-		</ul>
-		<div class="stage">
-			<div class="left">
-				<ul class="trace"></ul>
-			</div>
-			<div class="page"></div>
-			<div class="arrow">></div>
+		<div class="left">
+			<div class="box" onclick="getMainPage();">首页</div>
+			<ul class="trace"></ul>
 		</div>
+		<div class="page"></div>
+		<div class="expand">></div>
+		<div class="user" onclick="alert('用户登录(未完成)');"></div>
 		<!-- template -->
 		<div class="popup tpl">
 			<div class="box">
@@ -571,7 +545,7 @@
 			}
 
 			/**** advance ****/
-			document.querySelector(".arrow").onclick = function() {
+			document.querySelector(".expand").onclick = function() {
 				if(document.body.className == "ex") {
 					document.body.className = "";
 				} else {
