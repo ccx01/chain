@@ -141,6 +141,8 @@
 
 			.popup {
 				position: fixed;
+				top: 0;
+				left: 0;
 				width: 100%;
 				height: 100%;
 				background: rgba(0,0,0,.2);
@@ -227,9 +229,8 @@
 			<div class="left">
 				<ul class="trace"></ul>
 			</div>
-			<div class="last"></div>
-			<div class="page"></div>
 			<div class="arrow">></div>
+			<div class="page"></div>
 		</div>
 		<!-- template -->
 		<div class="popup tpl">
@@ -241,9 +242,7 @@
 			</div>
 		</div>
 		<div class="user tpl">
-			<div class="box">
-
-			</div>
+			<div class="box"></div>
 		</div>
 		<!-- id cont tag time -->
 		<template id="main-tpl" class="tpl">
@@ -324,14 +323,14 @@
 				switch(t.className) {
 					case "main":
 						// mainToScene(d.aid, d.mid, t.innerHTML);
-						getScene(d.aid, d.mid, t.innerHTML);
+						getScene(d.aid, d.mid, 0);
 					break;
 					case "scene":
 						getAction(d.sid, t.innerHTML);
 					break;
 					case "option":
 						var $scene = t.parentNode.parentNode.querySelector(".scene");
-						getScene(d.aid, $scene.dataset.mid, $scene.innerHTML + "(" + t.innerHTML + ")");
+						getScene(d.aid, $scene.dataset.mid, $scene.dataset.sid);
 					break;
 					case "add":
 						popup(t);
@@ -340,9 +339,14 @@
 			}
 
 			HTMLElement.prototype.appendNodes = function(nodes) {
+				console.log(nodes)
 				var fragment = document.createDocumentFragment();
-				for(var i = 0; i < nodes.length; i++) {
-					fragment.appendChild(nodes[i].cloneNode(true));
+				if(nodes.length) {
+					for(var i = 0; i < nodes.length; i++) {
+						fragment.appendChild(nodes[i].cloneNode(true));
+					}
+				} else {
+					fragment.appendChild(nodes.cloneNode(true));
 				}
 				this.appendChild(fragment);
 			}
@@ -410,7 +414,7 @@
 					if(data) {
 						var main_tpl = document.querySelector('#main-tpl').innerHTML;
 						var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
-						$page.innerHTML = getHtml(main_tpl, data) + add_main_tpl;
+						$page.innerHTML = getHtml(main_tpl, data);
 					} else {
 						var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
 						$page.innerHTML = add_main_tpl;
@@ -438,8 +442,7 @@
 			/* main */
 
 			/* scene */
-			function getScene(aid, mid, cont, callback) {
-				document.querySelector(".last").innerHTML = cont;
+			function getScene(aid, mid, sid, callback) {
 				if(aid != 0) {
 					var post_data = "aid=" + aid ;
 				} else {
@@ -447,11 +450,17 @@
 				}
 				var add_data = [{'aid': aid, 'mid': mid}];
 				ajax("data/scene.php", post_data, function(data) {
-					setTrace(aid, mid, cont);
+					// setTrace(aid, mid, cont);
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-						$page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
+						// $page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
+						var $s = document.querySelector('.s' + sid);
+						if($s) {
+							$s.innerHTML = getHtml(scene_tpl, data);
+						} else {
+							$page.appendNodes(genNode('<div class="layer s' + sid + '">' + getHtml(scene_tpl, data) + '</div>'));
+						}
 					} else {
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
 						$page.innerHTML = "<p>目前没有场景</p>" + getHtml(add_scene_tpl, add_data);
@@ -479,7 +488,7 @@
 				var post_data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&first=' + first + '&uid=' + _user;
 				ajax("data/scene.php", post_data, function(data) {
 					if(data == 1) {
-						getScene(aid, mid, cont, function() {
+						getScene(aid, mid, 0, function() {
 							$add.value = "";
 							$popup.style.display = "none";
 						});
