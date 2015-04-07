@@ -98,12 +98,17 @@
 			.trace b {
 				display: none;
 			}
-			.page {
+			.last {
 				position: absolute;
-				top: 0;
+				top: 75px;
 				left: 22%;
 				width: 75%;
-				margin-top: 60px;
+			}
+			.page {
+				position: absolute;
+				top: 90px;
+				left: 22%;
+				width: 75%;
 				outline: none;
 				-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
 			}
@@ -220,6 +225,7 @@
 			<div class="left">
 				<ul class="trace"></ul>
 			</div>
+			<div class="last"></div>
 			<div class="page"></div>
 			<div class="arrow">></div>
 		</div>
@@ -264,7 +270,7 @@
 			<span class="add" data-type="action" data-id="{#id}">+</span>
 		</template>
 		<template id="trace-tpl" class="tpl">
-			<li class="box{#active}" onclick="getTrace({#aid},{#mid},{#pos})"><b>{#pos}</b><span>{#cont}</span></li>
+			<li class="box{#active}" onclick="getTrace({#aid},{#mid},'{#cont}',{#pos})"><b>{#pos}</b><span>{#cont}</span></li>
 		</template>
 		<!-- template -->
 		<script>
@@ -316,14 +322,14 @@
 				switch(t.className) {
 					case "main":
 						// mainToScene(d.aid, d.mid, t.innerHTML);
-						getScene(d.aid, d.mid, t.innerHTML, 0);
+						getScene(d.aid, d.mid, t.innerHTML);
 					break;
 					case "scene":
 						getAction(d.sid, t.innerHTML);
 					break;
 					case "option":
 						var $scene = t.parentNode.parentNode.querySelector(".scene");
-						getScene(d.aid, $scene.dataset.mid, $scene.innerHTML + "(" + t.innerHTML + ")", $scene.dataset.sid);
+						getScene(d.aid, $scene.dataset.mid, $scene.innerHTML + "(" + t.innerHTML + ")");
 					break;
 					case "add":
 						popup(t);
@@ -430,15 +436,16 @@
 			/* main */
 
 			/* scene */
-			function getScene(aid, mid, cont, sid) {
-				if(sid) {
+			function getScene(aid, mid, cont, callback) {
+				document.querySelector(".last").innerHTML = cont;
+				if(aid != 0) {
 					var post_data = "aid=" + aid ;
 				} else {
 					var post_data = "mid=" + mid;
 				}
 				var add_data = [{'aid': aid, 'mid': mid}];
 				ajax("data/scene.php", post_data, function(data) {
-					setTrace(aid, mid, sid, cont);
+					setTrace(aid, mid, cont);
 					if(data) {
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
@@ -447,6 +454,8 @@
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
 						$page.innerHTML = "<p>目前没有场景</p>" + getHtml(add_scene_tpl, add_data);
 					}
+					callback = callback || function() {}
+					callback();
 				});
 			}
 
@@ -468,20 +477,10 @@
 				var post_data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&first=' + first + '&uid=' + _user;
 				ajax("data/scene.php", post_data, function(data) {
 					if(data == 1) {
-						var post_data = "aid=" + aid + "&mid=" + mid;
-						var add_data = [{'aid': aid, 'mid': mid}];
-						ajax("data/scene.php", post_data, function(data) {
-							if(data) {
-								var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
-								var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-								$page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
-							} else {
-								var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-								$page.innerHTML = "<p>目前没有场景</p>" + getHtml(add_scene_tpl, add_data);
-							}
+						getScene(aid, mid, cont, function() {
+							$add.value = "";
+							$popup.style.display = "none";
 						});
-						$add.value = "";
-						$popup.style.display = "none";
 					}else{
 						alert("添加失败");
 					}
@@ -538,14 +537,12 @@
 				"cur": 0
 			}
 
-			function setTrace(aid, mid, sid, cont) {
+			function setTrace(aid, mid, cont) {
 				path.trace[path.cur] = {};
 				path.trace[path.cur].mid = mid;
-				path.trace[path.cur].sid = sid;
 				path.trace[path.cur].aid = aid;
 				path.trace[path.cur].cont = cont;
 				path.cur++;
-
 
 				var new_trace = [];
 				var hash;
@@ -553,7 +550,7 @@
 					if(i == 0) {
 						hash = "m" + path.trace[i].mid;
 					} else {
-						hash += "s" + path.trace[i].sid + "_" + path.trace[i].aid;
+						hash += "_" + path.trace[i].aid;
 					}
 					new_trace[i] = path.trace[i];
 					new_trace[i].pos = i;
@@ -566,39 +563,15 @@
 				var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
 				document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
 
-				window.location.hash = hash;
+				// window.location.hash = hash;
 			}
-			function getTrace(aid, mid, cur) {
+			var last_path = {}
+			function getTrace(aid, mid, cont, cur) {
+
 				cur = cur || 0;
-				path.cur = cur + 1;
+				path.cur = cur;
 
-				var post_data = "aid=" + aid + "&mid=" + mid;
-				var add_data = [{'aid': aid, 'mid': mid}];
-
-				ajax("data/scene.php", post_data, function(data) {
-
-					var hash;
-					for (var i = 0; i < path.cur; i++) {
-						if(i == 0) {
-							hash = "m" + path.trace[i].mid;
-						} else {
-							hash += "s" + path.trace[i].sid + "_" + path.trace[i].aid;
-						}
-					}
-					window.location.hash = hash;
-
-					document.querySelector(".trace .active").className = "box";
-					document.querySelectorAll(".trace .box")[cur].className = "box active";
-
-					if(data) {
-						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
-						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-						$page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
-					} else {
-						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-						$page.innerHTML = "<p>目前没有场景</p>" + getHtml(add_scene_tpl, add_data);
-					}
-				});
+				getScene(aid, mid, cont);
 			}
 
 			/**** advance ****/
@@ -612,7 +585,8 @@
 			/**** advance ****/
 
 			/* start */
-			if(/#m/.test(window.location.hash)) {
+			getMainPage();
+			/*if(/#m/.test(window.location.hash)) {
 				getRecord();
 			} else {
 				getMainPage();
@@ -633,12 +607,12 @@
 						}
 					}
 					var cur = path.cur - 1;
-					getTrace(path.trace[cur].aid, path.trace[cur].mid, cur);
+					getTrace(path.trace[cur].aid, path.trace[cur].mid, path.trace[cur].cont, cur);
 					document.body.className = "ex";
 					var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
 					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, path.trace);
 				});
-			}
+			}*/
 			/*var mark = window.location.hash.replace(/#s/,"").split("_");
 			for (var i = 0; i < mark.length; i++) {
 			}

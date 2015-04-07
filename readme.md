@@ -43,6 +43,8 @@ trace收入，高亮
 
 ##TIPS
 #####手机上的tap交互响应可以用:hover及:active来完成，虽然各个手机浏览器的表现会有些微区别，但总体效果还比较理想
+#####强迫症属性-webkit-tap-highlight-color
 
 ##MODIFY
 ###调整数据结构，以每一个scene为节点，同时scene-action为独立体，之后action-scene以link方式进行连接
+###trace待修改
