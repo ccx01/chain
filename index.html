@@ -235,6 +235,63 @@
 				bottom: 20px;
 				right: 20px;
 			}
+			.loading {
+				display: none;
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(0,0,0,0.3);
+				z-index: 99;
+			}
+			.ball {
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				margin-top: -15px;
+				margin-left: -15px;
+				width: 30px;
+				height: 30px;
+				border-radius: 50%;
+				background: #49e;
+				-webkit-animation: loading 1s infinite linear;
+				animation: loading 1s infinite linear;
+			}
+			@-webkit-keyframes loading {
+				0% {
+					-webkit-transform: translate3d(0, -30px, 0);
+				}
+				25% {
+					-webkit-transform: translate3d(30px, 0, 0);
+				}
+				50% {
+					-webkit-transform: translate3d(0, 30px, 0);
+				}
+				75% {
+					-webkit-transform: translate3d(-30px, 0, 0);
+				}
+				100% {
+					-webkit-transform: translate3d(0, -30px, 0);
+				}
+			}
+			@keyframes loading {
+				0% {
+					transform: translate3d(0, -30px, 0);
+				}
+				25% {
+					transform: translate3d(30px, 0, 0);
+				}
+				50% {
+					transform: translate3d(0, 30px, 0);
+				}
+				75% {
+					transform: translate3d(-30px, 0, 0);
+				}
+				100% {
+					transform: translate3d(0, -30px, 0);
+				}
+			}
 			@media screen and (max-width: 640px){
 				.trace span {
 					display: none;
@@ -269,6 +326,9 @@
 		</style>
 	</head>
 	<body>
+		<div class="loading">
+			<div class="ball"></div>
+		</div>
 		<ul class="nav">
 			<li onclick="getMainPage();">首页</li>
 			<li onclick="alert('直接分享当前地址，对方即可收到当前场景');">分享</li>
@@ -355,6 +415,7 @@
 			var $popup_tip = $popup.querySelector(".tip");
 			var $popup_len = $popup.querySelector(".length");
 			var $page = document.querySelector(".page");
+			var $loading = document.querySelector(".loading");
 			$page.addEventListener("click", getPage);
 			function getPage(e) {
 				var t = e.target;
@@ -542,8 +603,13 @@
 					}
 					return;
 				}
+				var loading = setTimeout(function() {
+					$loading.style.display = "block";
+				}, 300);
 				ajax("data/scene.php", post_data, function(data) {
 					// setTrace(aid, mid, cont);
+					clearTimeout(loading);
+					$loading.style.display = "none";
 					if(data) {
 						cache.scene[post_data] = data;
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
@@ -616,7 +682,11 @@
 					$action.innerHTML = getHtml(action_tpl, data) + getHtml(add_action_tpl, add_data);
 					return;
 				}
+				var loading = setTimeout(function() {
+					$loading.style.display = "block";
+				}, 300);
 				ajax("data/action.php", "id=" + sid, function(data) {
+					clearTimeout(loading);
 					if(data) {
 						cache.action["s" + sid] = data;
 						var action_tpl = document.querySelector('#action-tpl').innerHTML;
