@@ -17,21 +17,27 @@
 			.layer {
 				margin: 10px 0;
 				padding: 10px 0;
-				background: #FFEACC;
-				box-shadow: 0 10px 1px #ECBF33;
+				background: #49e;
+				overflow: hidden;
+				-webkit-transition: 0.6s;
+				transition: 0.6s;
 			}
 			.node {
 				overflow: hidden;
 				margin: 20px 10px;
-				border: 1px solid #ccc;
 				border-radius: 4px;
-				box-shadow: 0 3px 1px #ccc;
+				box-shadow: 0 3px 1px #BEBFC3;
 				background: #fff;
+				-webkit-transition: 0.6s;
+				transition: 0.6s;
 			}
 			.node .main,
 			.node .scene {
 				padding: 15px 10px;
 				cursor: pointer;
+				font: 14px/1.5em arial;
+				-webkit-transition: 0.3s;
+				transition: 0.3s;
 			}
 			.node .action {
 				overflow: hidden;
@@ -45,41 +51,63 @@
 				border-radius: 4px;
 				margin: 0 0 10px 10px;
 				cursor: pointer;
+				/*-webkit-transition: 0.3s;
+				transition: 0.3s;*/
 			}
 			.pass {
-				box-shadow: none;
 				margin: 0;
 				padding: 0;
 			}
-			.pass .node,
-			.pass > .add {
+			.pass .node {
+				margin: 0;
+				padding: 0;
+			}
+			.pass .add {
 				display: none;
 			}
+			.pass .node .main,
+			.pass .node .scene {
+				font: 0px/0em arial;
+				padding: 0;
+			}
+			
 			.pass .node.active {
-				display: block;
+				margin: 5px 10px 10px;
+				opacity: 1;
 				box-shadow: none;
 			}
+			.pass .node.active .add {
+				display: inline-block;
+			}
+			.pass .node.active .main,
+			.pass .node.active .scene {
+				padding: 15px 10px;
+				font: 14px/1.5em arial;
+			}
+
 			.option:hover,
 			.add:hover,
 			.option.active,
 			.add.active {
-				background: #B0DAFF;
+				color: #fff;
+				background: #49e;
 			}
 			.add {
 				display: inline-block;
 				border-radius: 5px;
-				margin: 20px 10px;
+				margin: 10px;
 				padding: 10px;
 				border: 1px solid #ccc;
+				background: #fff;
 				border-radius: 4px;
 				cursor: pointer;
 			}
 			.nav {
 				/*position: fixed;
 				top: 0;
-				left: 0;
+				left: 0;*/
 				margin: 0;
-				padding: 0;*/
+				padding: 0;
 				height: 60px;
 				/*width: 100%;*/
 				z-index: 99;
@@ -97,7 +125,8 @@
 				cursor: pointer;
 			}
 			.nav li:hover {
-				background: #B0DAFF;
+				color: #fff;
+				background: #49e;
 			}
 			.left {
 				position: fixed;
