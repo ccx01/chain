@@ -46,11 +46,9 @@ trace收入，高亮
 #####强迫症属性-webkit-tap-highlight-color
 
 ##MODIFY
-######调整数据结构，以每一个scene为节点，同时scene-action为独立体，之后action-scene以link方式进行连接
-######trace待修改
-######节点显示调整
+###调整数据结构，以每一个scene为节点，同时scene-action为独立体，之后action-scene以link方式进行连接
+###trace待修改
 
 ####心情记录
 #####20150407
 ######又到了想推倒重来的坎，瓶颈一号。
-######果然半夜才是主场
