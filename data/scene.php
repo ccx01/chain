@@ -24,7 +24,6 @@ if(isset($_POST['cont']) && !empty($_POST['cont'])) {
 	}
 	echo $result;
 } else if($mid != 0) {
-	$sid = strip_tags($_POST['sid']);
 	$sql = "SELECT * FROM scene WHERE mid='$mid' and first=1 ORDER BY id DESC limit 10";
 	$result = mysql_query($sql);
 	while($row = mysql_fetch_array($result))
