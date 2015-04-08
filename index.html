@@ -329,6 +329,11 @@
 			if(!('webkitTransform' in dom.style)) {
 				alert("当前不支持该浏览器");
 			}
+			var cache = {
+				main: [],
+				scene: {},
+				action: {}
+			}
 			/* ajax */
 			function ajax(url, data, callback) {
 				var xmlhttp = new XMLHttpRequest();
@@ -352,19 +357,6 @@
 			var $page = document.querySelector(".page");
 			$page.addEventListener("click", getPage);
 			function getPage(e) {
-				//search for parent node
-				/*var path = e.path;
-				for (var i = 0; i < e.path.length; i++) {
-					if(e.path[i].className == "node") {
-						path = e.path[i];
-						break;
-					}
-				}
-				console.log(path);*/
-				if(document.body.className == "ex") {
-					document.body.className = "";
-					return;
-				}
 				var t = e.target;
 				var d = t.dataset;
 				switch(t.className) {
@@ -388,7 +380,9 @@
 						getScene(d.aid, d.mid, 0);
 					break;
 					case "scene":
-						getAction(d.sid, t.innerHTML);
+						if(!/active/.test(t.parentNode.className)) {
+							getAction(d.sid, t.innerHTML);
+						}
 					break;
 					case "option":
 						var $scene = t.parentNode.parentNode.querySelector(".scene");
@@ -411,7 +405,6 @@
 						if($layer.querySelector(".option.active")) {
 							$layer.querySelector(".option.active").className = "option";
 						}
-						console.log(t)
 						t.className += " active"
 						getScene(d.aid, $scene.dataset.mid, parseInt($layer.id.substr(1)) + 1);
 					break;
@@ -486,10 +479,16 @@
 			}
 			/* main */
 			function getMainPage() {
+				if(cache.main.length > 0) {
+					var data = cache.main;
+					var main_tpl = document.querySelector('#main-tpl').innerHTML;
+					var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
+					$page.innerHTML = '<div class="layer">' + getHtml(main_tpl, data) +  add_main_tpl + '</div>';
+					return;
+				}
 				ajax("data/main.php", "", function(data) {
-					window.location.hash = "";
-					path.cur = 0;
 					if(data) {
+						cache.main = data;
 						var main_tpl = document.querySelector('#main-tpl').innerHTML;
 						var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
 						$page.innerHTML = '<div class="layer">' + getHtml(main_tpl, data) +  add_main_tpl + '</div>';
@@ -525,9 +524,28 @@
 					var post_data = "mid=" + mid;
 				}
 				var add_data = [{'aid': aid, 'mid': mid}];
+				cache.scene[post_data] = cache.scene[post_data] || [];
+				if(cache.scene[post_data].length > 0) {
+					var data = cache.scene[post_data];
+					var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
+					var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
+					// $page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
+					var $layer = document.querySelector('#l' + cur);
+					if($layer) {
+						$layer.className = $layer.className.replace(" pass","");
+						$layer.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
+						while($layer.nextSibling) {
+							$page.removeChild($layer.nextSibling);
+						}
+					} else {
+						$page.appendNodes(genNode('<div class="layer" id="l' + cur + '">' + getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data) + '</div>'));
+					}
+					return;
+				}
 				ajax("data/scene.php", post_data, function(data) {
 					// setTrace(aid, mid, cont);
 					if(data) {
+						cache.scene[post_data] = data;
 						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
 						// $page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
@@ -589,8 +607,18 @@
 			/* action */
 			function getAction(sid, cont) {
 				var add_data = [{'id': sid}];
+				cache.action["s" + sid] = cache.action["s" + sid] || [];
+				if(cache.action["s" + sid] > 0) {
+					var data = cache.action["s" + sid];
+					var action_tpl = document.querySelector('#action-tpl').innerHTML;
+					var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
+					var $action = document.querySelector("#s" + sid);
+					$action.innerHTML = getHtml(action_tpl, data) + getHtml(add_action_tpl, add_data);
+					return;
+				}
 				ajax("data/action.php", "id=" + sid, function(data) {
 					if(data) {
+						cache.action["s" + sid] = data;
 						var action_tpl = document.querySelector('#action-tpl').innerHTML;
 						var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
 						var $action = document.querySelector("#s" + sid);
