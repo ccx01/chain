@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS `action` (
   `cont` text COLLATE utf8_unicode_ci NOT NULL,
   `rollback` int(11) NOT NULL DEFAULT '0' COMMENT '储存已存在的回滚sid',
   `uid` int(11) NOT NULL COMMENT '用户外键',
-  `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='枝干行为部分（回答）' AUTO_INCREMENT=1 ;
 
@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS `main` (
   `cont` text COLLATE utf8_unicode_ci NOT NULL,
   `uid` int(11) NOT NULL,
   `tag` int(11) NOT NULL DEFAULT '0' COMMENT '分类',
-  `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='首页显示部分' AUTO_INCREMENT=1 ;
 
@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS `scene` (
   `cont` text COLLATE utf8_unicode_ci NOT NULL,
   `first` int(2) NOT NULL DEFAULT '0' COMMENT '判断是否为当前主线的第一节点 1或0',
   `uid` int(11) NOT NULL,
-  `time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci COMMENT='枝干场景部分（问题）' AUTO_INCREMENT=1 ;
 

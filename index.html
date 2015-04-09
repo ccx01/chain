@@ -35,7 +35,7 @@
 			.node .scene {
 				padding: 15px 10px;
 				cursor: pointer;
-				font: 14px/1.5em arial;
+				font: 16px/1.5em arial;
 				-webkit-transition: 0.3s;
 				transition: 0.3s;
 			}
@@ -82,7 +82,7 @@
 			.pass .node.active .main,
 			.pass .node.active .scene {
 				padding: 15px 10px;
-				font: 14px/1.5em arial;
+				font: 16px/1.5em arial;
 			}
 
 			.option:hover,
@@ -423,14 +423,16 @@
 				switch(t.className) {
 					case "main":
 						var $layer, $node;
-						for (var i = 0; i < e.path.length; i++) {
+						/*for (var i = 0; i < e.path.length; i++) {
 							if(/layer/.test(e.path[i].className)) {
 								$layer = e.path[i];
 							}
 							if(/node/.test(e.path[i].className)) {
 								$node = e.path[i];
 							}
-						}
+						}*/
+						$layer = t.parentNode.parentNode;
+						$node = t.parentNode;
 						if(!/pass/.test($layer.className)) {
 							$layer.className += " pass";
 						}
@@ -448,14 +450,16 @@
 					case "option":
 						var $scene = t.parentNode.parentNode.querySelector(".scene");
 						var $layer, $node;
-						for (var i = 0; i < e.path.length; i++) {
+						/*for (var i = 0; i < e.path.length; i++) {
 							if(/layer/.test(e.path[i].className)) {
 								$layer = e.path[i];
 							}
 							if(/node/.test(e.path[i].className)) {
 								$node = e.path[i];
 							}
-						}
+						}*/
+						$layer = t.parentNode.parentNode.parentNode;
+						$node = t.parentNode.parentNode;
 						if(!/pass/.test($layer.className)) {
 							$layer.className += " pass";
 						}
