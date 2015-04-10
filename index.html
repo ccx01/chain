@@ -416,6 +416,7 @@
 			var $popup_len = $popup.querySelector(".length");
 			var $page = document.querySelector(".page");
 			var $loading = document.querySelector(".loading");
+			// $page.addEventListener("touchend", getPage);
 			$page.addEventListener("click", getPage);
 			function getPage(e) {
 				var t = e.target;
@@ -431,8 +432,8 @@
 								$node = e.path[i];
 							}
 						}*/
-						$layer = t.parentNode.parentNode;
-						$node = t.parentNode;
+						$layer = t.parentNodes("layer");
+						$node = t.parentNodes("node");
 						if(!/pass/.test($layer.className)) {
 							$layer.className += " pass";
 						}
@@ -458,8 +459,8 @@
 								$node = e.path[i];
 							}
 						}*/
-						$layer = t.parentNode.parentNode.parentNode;
-						$node = t.parentNode.parentNode;
+						$layer = t.parentNodes("layer");
+						$node = t.parentNodes("node");
 						if(!/pass/.test($layer.className)) {
 							$layer.className += " pass";
 						}
@@ -477,6 +478,17 @@
 						popup(t);
 					break;
 				}
+			}
+			HTMLElement.prototype.parentNodes = function(selector) {
+				var reg = new RegExp(selector);
+				var node = this.parentNode;
+				while(node) {
+					if(reg.test(node.className)) {
+						break;
+					}
+					node = node.parentNode;
+				}
+				return node;
 			}
 			HTMLElement.prototype.appendNodes = function(nodes) {
 				var fragment = document.createDocumentFragment();
@@ -536,8 +548,17 @@
 				$popup_len.innerHTML = "已输入0字";
 				$popup.style.display = "block";
 			}
+			/*$popup.addEventListener("touchend", function(e) {
+				(/popup/.test(e.target.className)) && (this.style.display = "none");
+			});*/
 			$popup.addEventListener("click", function(e) {
 				(/popup/.test(e.target.className)) && (this.style.display = "none");
+			});
+			/*$loading.addEventListener("touchend", function(e) {
+				this.style.display = "none";
+			});*/
+			$loading.addEventListener("click", function(e) {
+				this.style.display = "none";
 			});
 			$add.onkeyup = function() {
 				$popup_len.innerHTML = "已输入" + $add.value.length + "字";
