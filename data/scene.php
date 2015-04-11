@@ -23,6 +23,13 @@ if(isset($_POST['cont']) && !empty($_POST['cont'])) {
 		$result = mysql_query($sql);
 	}
 	echo $result;
+} else if(isset($_POST['sid']) && !empty($_POST['sid'])) {
+	$sid = $_POST['sid'];
+	if($aid) {
+		$sql = "INSERT INTO link (aid,sid) VALUES ('$aid','$sid')";
+		$result = mysql_query($sql);
+	}
+	echo $result;
 } else if($mid != 0) {
 	$sql = "SELECT * FROM scene WHERE mid='$mid' and first=1 ORDER BY id DESC limit 10";
 	$result = mysql_query($sql);

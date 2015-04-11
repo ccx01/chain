@@ -31,7 +31,7 @@
 				-webkit-transition: 0.6s;
 				transition: 0.6s;
 			}
-			.node .main,
+			.node .front,
 			.node .scene {
 				padding: 15px 10px;
 				cursor: pointer;
@@ -50,6 +50,7 @@
 				padding: 10px;
 				border-radius: 4px;
 				margin: 0 0 10px 10px;
+				font: 16px/1em arial;
 				cursor: pointer;
 				/*-webkit-transition: 0.3s;
 				transition: 0.3s;*/
@@ -65,7 +66,7 @@
 			.pass .add {
 				display: none;
 			}
-			.pass .node .main,
+			.pass .node .front,
 			.pass .node .scene {
 				font: 0px/0em arial;
 				padding: 0;
@@ -79,10 +80,16 @@
 			.pass .node.active .add {
 				display: inline-block;
 			}
-			.pass .node.active .main,
+			.pass .node.active .front,
 			.pass .node.active .scene {
 				padding: 15px 10px;
 				font: 16px/1.5em arial;
+			}
+			.pass .node .action {
+				display: none;
+			}
+			.pass .node.active .action {
+				display: block;
 			}
 
 			.option:hover,
@@ -330,7 +337,7 @@
 			<div class="ball"></div>
 		</div>
 		<ul class="nav">
-			<li onclick="getMainPage();">首页</li>
+			<li onclick="front.get();">首页</li>
 			<li onclick="alert('直接分享当前地址，对方即可收到当前场景');">分享</li>
 			<li onclick="alert('用户登录(未完成)，当前数据随时会清空');">登录</li>
 			<li onclick="alert('没有使用帮助,动画手势陆续添加中')">?</li>
@@ -347,6 +354,7 @@
 			<div class="box">
 				<p class="tip"></p>
 				<textarea id="add" type="text"></textarea>
+				<textarea id="exist-node" type="text"></textarea>
 				<p class="length"></p>
 				<span id="add-btn">添加</span>
 			</div>
@@ -355,13 +363,13 @@
 			<div class="box"></div>
 		</div>
 		<!-- id cont tag time -->
-		<template id="main-tpl" class="tpl">
+		<template id="front-tpl" class="tpl">
 			<div class="node">
-				<div class="main" data-mid="{#id}" data-aid="0">{#cont}</div>
+				<div class="front" data-mid="{#id}" data-aid="0">{#cont}</div>
 			</div>
 		</template>
-		<template id="add-main-tpl" class="tpl">
-			<span class="add" data-type="main">添加主题</span>
+		<template id="add-front-tpl" class="tpl">
+			<span class="add" data-type="front">添加主题</span>
 		</template>
 		<!-- id mid aid cont time -->
 		<template id="scene-tpl" class="tpl">
@@ -389,12 +397,36 @@
 			if(!('webkitTransform' in dom.style)) {
 				alert("当前不支持该浏览器");
 			}
+
 			var cache = {
-				main: [],
+				front: [],
 				scene: {},
 				action: {}
 			}
-			/* ajax */
+
+			/*** util ****/
+			HTMLElement.prototype.appendNodes = function(nodes) {
+				var fragment = document.createDocumentFragment();
+				if(nodes.length) {
+					for(var i = 0; i < nodes.length; i++) {
+						fragment.appendChild(nodes[i].cloneNode(true));
+					}
+				} else {
+					fragment.appendChild(nodes.cloneNode(true));
+				}
+				this.appendChild(fragment);
+			}
+			HTMLElement.prototype.parentNodes = function(cls) {
+				var reg = new RegExp(cls);
+				var node = this.parentNode;
+				while(node) {
+					if(reg.test(node.className)) {
+						break;
+					}
+					node = node.parentNode;
+				}
+				return node;
+			}
 			function ajax(url, data, callback) {
 				var xmlhttp = new XMLHttpRequest();
 					xmlhttp.open("POST", url, true);
@@ -407,105 +439,12 @@
 					}
 				}
 			}
-			/* ajax */
-			/* dom control */
-			var $add = document.querySelector("#add");
-			var $add_btn = document.querySelector("#add-btn");
-			var $popup = document.querySelector(".popup");
-			var $popup_tip = $popup.querySelector(".tip");
-			var $popup_len = $popup.querySelector(".length");
-			var $page = document.querySelector(".page");
-			var $loading = document.querySelector(".loading");
-			// $page.addEventListener("touchend", getPage);
-			$page.addEventListener("click", getPage);
-			function getPage(e) {
-				var t = e.target;
-				var d = t.dataset;
-				switch(t.className) {
-					case "main":
-						var $layer, $node;
-						/*for (var i = 0; i < e.path.length; i++) {
-							if(/layer/.test(e.path[i].className)) {
-								$layer = e.path[i];
-							}
-							if(/node/.test(e.path[i].className)) {
-								$node = e.path[i];
-							}
-						}*/
-						$layer = t.parentNodes("layer");
-						$node = t.parentNodes("node");
-						if(!/pass/.test($layer.className)) {
-							$layer.className += " pass";
-						}
-						if($layer.querySelector(".node.active")) {
-							$layer.querySelector(".node.active").className = "node";
-						}
-						$node.className += " active";
-						getScene(d.aid, d.mid, 0);
-					break;
-					case "scene":
-						if(!/active/.test(t.parentNode.className)) {
-							getAction(d.sid, t.innerHTML);
-						}
-					break;
-					case "option":
-						var $scene = t.parentNode.parentNode.querySelector(".scene");
-						var $layer, $node;
-						/*for (var i = 0; i < e.path.length; i++) {
-							if(/layer/.test(e.path[i].className)) {
-								$layer = e.path[i];
-							}
-							if(/node/.test(e.path[i].className)) {
-								$node = e.path[i];
-							}
-						}*/
-						$layer = t.parentNodes("layer");
-						$node = t.parentNodes("node");
-						if(!/pass/.test($layer.className)) {
-							$layer.className += " pass";
-						}
-						if($layer.querySelector(".node.active")) {
-							$layer.querySelector(".node.active").className = "node";
-						}
-						$node.className += " active";
-						if($layer.querySelector(".option.active")) {
-							$layer.querySelector(".option.active").className = "option";
-						}
-						t.className += " active"
-						getScene(d.aid, $scene.dataset.mid, parseInt($layer.id.substr(1)) + 1);
-					break;
-					case "add":
-						popup(t);
-					break;
+			function getHtml(tpl, data) {
+				var html = "";
+				for (var i = 0; i < data.length; i++) {
+					html += tplEngine(tpl, data[i]);
 				}
-			}
-			HTMLElement.prototype.parentNodes = function(selector) {
-				var reg = new RegExp(selector);
-				var node = this.parentNode;
-				while(node) {
-					if(reg.test(node.className)) {
-						break;
-					}
-					node = node.parentNode;
-				}
-				return node;
-			}
-			HTMLElement.prototype.appendNodes = function(nodes) {
-				var fragment = document.createDocumentFragment();
-				if(nodes.length) {
-					for(var i = 0; i < nodes.length; i++) {
-						fragment.appendChild(nodes[i].cloneNode(true));
-					}
-				} else {
-					fragment.appendChild(nodes.cloneNode(true));
-				}
-				this.appendChild(fragment);
-			}
-			function genNode(html) {
-				var div_tmp = document.createElement("div");
-					div_tmp.innerHTML = html;
-				var nodes = div_tmp.childNodes; 
-				return nodes;
+				return html;
 			}
 			function tplEngine(tpl, data) {
 				var re = /{#(\w+)?}/;
@@ -514,135 +453,181 @@
 				}
 				return tpl;
 			}
-			/* dom control */
-			/* page fill */
-			function getHtml(tpl, data) {
-				var html = "";
-				for (var i = 0; i < data.length; i++) {
-					html += tplEngine(tpl, data[i]);
-				}
-				return html;
+			function genNode(html) {
+				var div_tmp = document.createElement("div");
+					div_tmp.innerHTML = html;
+				var nodes = div_tmp.childNodes; 
+				return nodes;
 			}
+			HTMLElement.prototype.addClass = function(cls) {
+				var reg = new RegExp("\\s*" + cls);
+				if(!reg.test(this.className)) {
+					this.className += " " + cls;
+				}
+			}
+			HTMLElement.prototype.removeClass = function(cls) {
+				var reg = new RegExp("\\s*" + cls);
+				if(reg.test(this.className)) {
+					this.className = this.className.replace(reg, "");
+				}
+			}
+			HTMLElement.prototype.toggleClass = function(cls) {
+				var reg = new RegExp("\\s*" + cls);
+				if(reg.test(this.className)) {
+					this.className = this.className.replace(reg, "");
+				} else {
+					this.className += " " + cls;
+				}
+			}
+			/*** util end ****/
+
+			function pageClick(e) {
+				var t = e.target;
+				var d = t.dataset;
+				switch(t.className) {
+					case "front":
+						var $layer = t.parentNodes("layer");
+						var $node = t.parentNodes("node");
+
+						$layer.toggleClass("pass");
+						$node.toggleClass("active");
+						//aid = 0
+						scene.get(d.aid, d.mid, 0);
+					break;
+					case "scene":
+						var $node = t.parentNodes("node");
+						var $option = $node.querySelector(".option.active");
+						if($option) {
+							var $layer = t.parentNodes("layer");
+
+							$layer.toggleClass("pass");
+							$node.toggleClass("active");
+						} else {
+							action.get(d.sid, t);
+						}
+					break;
+					case "option":
+					case "option active":
+						var $scene = t.parentNodes("node").querySelector(".scene");	//useless
+						var $layer = t.parentNodes("layer");
+						var $node = t.parentNodes("node");
+						var $option = t;
+
+						$layer.addClass("pass");
+
+						var $node_a = $layer.querySelector(".node.active");
+						$node_a && $node_a.removeClass("active");
+						$node.addClass("active");
+
+						var $option_a = $layer.querySelector(".option.active");
+						$option_a && $option_a.removeClass("active");
+						$option.addClass("active");
+
+						//mid = 0
+						scene.get(d.aid, $scene.dataset.mid, parseInt($layer.id.substr(1)) + 1);
+					break;
+					case "add":
+						popup(t);
+					break;
+				}
+			}
+
+			var _user = 0;
 			function popup(t) {
+				/** add function **/
+				/*if(!_user) {
+					_user = prompt("随便输个id用来记录，后续添加登录功能","name");
+					if( !_user || _user == "name") {
+						alert("随便打几个字符就好");
+						return;
+					}
+				}*/
 				var data = t.dataset;
 				switch(data.type) {
-					case "main":
+					case "front":
 						$popup_tip.innerHTML = "问题请在100字内描述完";
 						$add_btn.onclick = function() {
-							addMain();
+							front.add();
 						}
 					break;
 					case "scene":
 						$popup_tip.innerHTML = "场景描述50字就够了";
 						$add_btn.onclick = function() {
-							addScene(data.aid, data.mid, parseInt(t.parentNode.id.substr(1)));
+							scene.add(data.aid, data.mid, parseInt(t.parentNode.id.substr(1)));
 						}
 					break;
 					case "action":
 						$popup_tip.innerHTML = "10字以内";
 						$add_btn.onclick = function() {
-							addAction(data.id);
+							action.add(data.id);
 						}
 					break;
 				}
 				$popup_len.innerHTML = "已输入0字";
 				$popup.style.display = "block";
 			}
-			/*$popup.addEventListener("touchend", function(e) {
-				(/popup/.test(e.target.className)) && (this.style.display = "none");
-			});*/
-			$popup.addEventListener("click", function(e) {
-				(/popup/.test(e.target.className)) && (this.style.display = "none");
-			});
-			/*$loading.addEventListener("touchend", function(e) {
-				this.style.display = "none";
-			});*/
-			$loading.addEventListener("click", function(e) {
-				this.style.display = "none";
-			});
-			$add.onkeyup = function() {
-				$popup_len.innerHTML = "已输入" + $add.value.length + "字";
-			}
-			/* main */
-			function getMainPage() {
-				if(cache.main.length > 0) {
-					var data = cache.main;
-					var main_tpl = document.querySelector('#main-tpl').innerHTML;
-					var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
-					$page.innerHTML = '<div class="layer">' + getHtml(main_tpl, data) +  add_main_tpl + '</div>';
-					return;
-				}
-				ajax("data/main.php", "", function(data) {
-					if(data) {
-						cache.main = data;
-						var main_tpl = document.querySelector('#main-tpl').innerHTML;
-						var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
-						$page.innerHTML = '<div class="layer">' + getHtml(main_tpl, data) +  add_main_tpl + '</div>';
-					} else {
-						var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
-						$page.innerHTML = add_main_tpl;
+
+			/* front */
+			var front = (function() {
+				var I = {}
+				var front_tpl = document.querySelector('#front-tpl').innerHTML;
+				var add_front_tpl = document.querySelector('#add-front-tpl').innerHTML;
+
+				I.get = function() {
+					if(cache.front.length > 0) {
+						var data = cache.front;
+						$page.innerHTML = '<div class="layer">' + getHtml(front_tpl, data) +  add_front_tpl + '</div>';
+						return;
 					}
-				});
-			}
-			function addMain() {
-				var cont = $add.value;
-				if(cont.length > 100) {
-					alert("超过100字了，精简一下吧");
-					return;
-				}
-				var data = 'cont=' + cont;
-				ajax("data/main.php", data, function(data) {
-					if(data == 1) {
-						getMainPage();
-						$add.value = "";
-						$popup.style.display = "none";
-					}else{
-						alert("添加失败");
-					}
-				});
-			}
-			/* main */
-			/* scene */
-			function getScene(aid, mid, cur, callback) {
-				if(aid != 0) {
-					var post_data = "aid=" + aid;
-				} else {
-					var post_data = "mid=" + mid;
-				}
-				var add_data = [{'aid': aid, 'mid': mid}];
-				cache.scene[post_data] = cache.scene[post_data] || [];
-				if(cache.scene[post_data].length > 0) {
-					var data = cache.scene[post_data];
-					var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
-					var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-					// $page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
-					var $layer = document.querySelector('#l' + cur);
-					if($layer) {
-						$layer.className = $layer.className.replace(" pass","");
-						$layer.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
-						while($layer.nextSibling) {
-							$page.removeChild($layer.nextSibling);
+					ajax("data/front.php", "", function(data) {
+						if(data) {
+							cache.front = data;
+							$page.innerHTML = '<div class="layer">' + getHtml(front_tpl, data) +  add_front_tpl + '</div>';
+						} else {
+							$page.innerHTML = add_front_tpl;
 						}
-					} else {
-						$page.appendNodes(genNode('<div class="layer" id="l' + cur + '">' + getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data) + '</div>'));
-					}
-					return;
+					});
 				}
-				var loading = setTimeout(function() {
-					$loading.style.display = "block";
-				}, 300);
-				ajax("data/scene.php", post_data, function(data) {
-					// setTrace(aid, mid, cont);
-					clearTimeout(loading);
-					$loading.style.display = "none";
-					if(data) {
-						cache.scene[post_data] = data;
-						var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
-						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-						// $page.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
+				I.add = function() {
+					var cont = $add.value;
+					if(cont.length > 100) {
+						alert("超过100字了，精简一下吧");
+						return;
+					}
+					var data = 'cont=' + cont;
+					ajax("data/front.php", data, function(data) {
+						if(data == 1) {
+							front.get();
+							$add.value = "";
+							$popup.style.display = "none";
+						}else{
+							alert("添加失败");
+						}
+					});
+				}
+
+				return I;
+			}());
+			/* front */
+			/* scene */
+			var scene = (function() {
+				var I = {}
+				var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
+				var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
+
+				I.get = function(aid, mid, cur, callback) {
+					if(aid != 0) {
+						var post_data = "aid=" + aid;
+					} else {
+						var post_data = "mid=" + mid;
+					}
+					var add_data = [{'aid': aid, 'mid': mid}];
+					cache.scene[post_data] = cache.scene[post_data] || [];
+					if(cache.scene[post_data].length > 0) {
+						var data = cache.scene[post_data];
 						var $layer = document.querySelector('#l' + cur);
 						if($layer) {
-							$layer.className = $layer.className.replace(" pass","");
+							$layer.removeClass("pass");
 							$layer.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
 							while($layer.nextSibling) {
 								$page.removeChild($layer.nextSibling);
@@ -650,200 +635,147 @@
 						} else {
 							$page.appendNodes(genNode('<div class="layer" id="l' + cur + '">' + getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data) + '</div>'));
 						}
-					} else {
-						var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
-						var $layer = document.querySelector('#l' + cur);
-						if($layer) {
-							$layer.className = $layer.className.replace(" pass","");
-							$layer.innerHTML = getHtml(add_scene_tpl, add_data);
-							while($layer.nextSibling) {
-								$page.removeChild($layer.nextSibling);
+						return;
+					}
+					var loading = setTimeout(function() {
+						$loading.style.display = "block";
+					}, 300);
+					ajax("data/scene.php", post_data, function(data) {
+						// setTrace(aid, mid, cont);
+						clearTimeout(loading);
+						$loading.style.display = "none";
+						if(data) {
+							cache.scene[post_data] = data;
+							var $layer = document.querySelector('#l' + cur);
+							if($layer) {
+								$layer.className = $layer.className.replace(" pass","");
+								$layer.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
+								while($layer.nextSibling) {
+									$page.removeChild($layer.nextSibling);
+								}
+							} else {
+								$page.appendNodes(genNode('<div class="layer" id="l' + cur + '">' + getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data) + '</div>'));
 							}
 						} else {
-							$page.appendNodes(genNode('<div class="layer" id="l' + cur + '">' + getHtml(add_scene_tpl, add_data) + '</div>'));
+							var $layer = document.querySelector('#l' + cur);
+							if($layer) {
+								$layer.className = $layer.className.replace(" pass","");
+								$layer.innerHTML = getHtml(add_scene_tpl, add_data);
+								while($layer.nextSibling) {
+									$page.removeChild($layer.nextSibling);
+								}
+							} else {
+								$page.appendNodes(genNode('<div class="layer" id="l' + cur + '">' + getHtml(add_scene_tpl, add_data) + '</div>'));
+							}
 						}
-					}
-					callback = callback || function() {}
-					callback();
-				});
-			}
-			var _user = 0;
-			function addScene(aid, mid, cur) {
-				/*if(!_user) {
-					_user = prompt("随便输个id用来记录，后续添加登录功能","name");
-					if( !_user || _user == "name") {
-						alert("随便打几个字符就好");
+						callback = callback || function() {}
+						callback();
+					});
+				}
+				I.add = function(aid, mid, cur) {
+					var cont = $add.value;
+					var sid = document.querySelector("#exist-node").value;
+					if(cont.length > 50) {
+						alert("超过50字了，精简一下吧");
 						return;
 					}
-				}*/
-				var cont = $add.value;
-				if(cont.length > 50) {
-					alert("超过50字了，精简一下吧");
-					return;
+					var first = (aid == 0) ? 1 : 0;
+					var post_data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&first=' + first + '&sid=' + sid;
+					ajax("data/scene.php", post_data, function(data) {
+						if(data == 1) {
+							scene.get(aid, mid, cur, function() {
+								$add.value = "";
+								$popup.style.display = "none";
+							});
+						}else{
+							alert("添加失败");
+						}
+					});
 				}
-				var first = (aid == 0) ? 1 : 0;
-				var post_data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&first=' + first + '&uid=' + _user;
-				ajax("data/scene.php", post_data, function(data) {
-					if(data == 1) {
-						getScene(aid, mid, cur, function() {
-							$add.value = "";
-							$popup.style.display = "none";
-						});
-					}else{
-						alert("添加失败");
-					}
-				});
-			}
+
+				return I;
+			}());
 			/* scene */
 			/* action */
-			function getAction(sid, cont) {
-				var add_data = [{'id': sid}];
-				cache.action["s" + sid] = cache.action["s" + sid] || [];
-				if(cache.action["s" + sid] > 0) {
-					var data = cache.action["s" + sid];
-					var action_tpl = document.querySelector('#action-tpl').innerHTML;
-					var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
-					var $action = document.querySelector("#s" + sid);
-					$action.innerHTML = getHtml(action_tpl, data) + getHtml(add_action_tpl, add_data);
-					return;
-				}
-				var loading = setTimeout(function() {
-					$loading.style.display = "block";
-				}, 300);
-				ajax("data/action.php", "id=" + sid, function(data) {
-					clearTimeout(loading);
-					if(data) {
-						cache.action["s" + sid] = data;
-						var action_tpl = document.querySelector('#action-tpl').innerHTML;
-						var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
-						var $action = document.querySelector("#s" + sid);
-						$action.innerHTML = getHtml(action_tpl, data) + getHtml(add_action_tpl, add_data);
-					} else {
-						var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
-						var $action = document.querySelector("#s" + sid);
-						$action.innerHTML = getHtml(add_action_tpl, add_data);
+			var action = (function() {
+				var I = {}
+				var action_tpl = document.querySelector('#action-tpl').innerHTML;
+				var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
+
+				I.get = function(sid, t) {
+					var cont = t.innerHTML;
+					var add_data = [{'id': sid}];
+					cache.action["s" + sid] = cache.action["s" + sid] || [];
+					var $action = t.nextSibling;
+					while($action) {
+						if($action.className == "action") {
+							break;
+						}
+						$action = $action.nextSibling;
 					}
-				});
-			}
-			function addAction(id) {
-				/*if(!_user) {
-					_user = prompt("随便输个id用来记录，后续添加登录功能","name");
-					if( !_user || _user == "name") {
-						alert("随便打几个字符就好");
+					if(cache.action["s" + sid] > 0) {
+						var data = cache.action["s" + sid];
+						$action.innerHTML = getHtml(action_tpl, data) + getHtml(add_action_tpl, add_data);
 						return;
 					}
-				}*/
-				var cont = $add.value;
-				if(cont.length > 10) {
-					alert("超过10字了，精简一下吧");
-					return;
-				}
-				var data = 'id=' + id + '&cont=' + cont + '&uid=' + _user;
-				ajax("data/action.php", data, function(data) {
-					if(data == 1) {
-						getAction(id, cont);
-						$add.value = "";
-						$popup.style.display = "none";
-					}else{
-						alert("添加失败");
-					}
-				});
-			}
-			/* action */
-			/**** trace ****/
-			var path = {
-				"trace": [],
-				"cur": 0
-			}
-			function setTrace(aid, mid, cont) {
-				path.trace[path.cur] = {};
-				path.trace[path.cur].mid = mid;
-				path.trace[path.cur].aid = aid;
-				path.trace[path.cur].cont = cont;
-				path.cur++;
-				var new_trace = [];
-				var hash;
-				for (var i = 0; i < path.cur; i++) {
-					if(i == 0) {
-						hash = "m" + path.trace[i].mid;
-					} else {
-						hash += "_" + path.trace[i].aid;
-					}
-					new_trace[i] = path.trace[i];
-					new_trace[i].pos = i;
-					if(i == path.cur - 1) {
-						new_trace[i].active = " active";
-					} else {
-						new_trace[i].active = "";
-					}
-				}
-				var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
-				document.querySelector(".trace").innerHTML = getHtml(trace_tpl, new_trace);
-				// window.location.hash = hash;
-			}
-			var last_path = {}
-			function getTrace(aid, mid, cont, cur) {
-				cur = cur || 0;
-				path.cur = cur;
-				getScene(aid, mid, cont);
-			}
-			/**** advance ****/
-			/*document.querySelector(".arrow").onclick = function() {
-				if(document.body.className == "ex") {
-					document.body.className = "";
-				} else {
-					document.body.className = "ex";
-				}
-			}*/
-			/**** advance ****/
-			/* start */
-			getMainPage();
-			/*if(/#m/.test(window.location.hash)) {
-				getRecord();
-			} else {
-				getMainPage();
-			}
-			function getRecord() {
-				var post_data = "hash=" + window.location.hash;
-				ajax("data/trace.php", post_data, function(data) {
-					path.trace = [];
-					path.cur = data.length;
-					for (var i = 0; i < path.cur; i++) {
-						path.trace[i] = data[i];
-						path.trace[i].pos = i;
-						if(i == path.cur - 1) {
-							path.trace[i].active = " active";
+					var loading = setTimeout(function() {
+						$loading.style.display = "block";
+					}, 300);
+					ajax("data/action.php", "id=" + sid, function(data) {
+						clearTimeout(loading);
+						if(data) {
+							cache.action["s" + sid] = data;
+							$action.innerHTML = getHtml(action_tpl, data) + getHtml(add_action_tpl, add_data);
 						} else {
-							path.trace[i].active = "";
+							$action.innerHTML = getHtml(add_action_tpl, add_data);
 						}
-					}
-					var cur = path.cur - 1;
-					getTrace(path.trace[cur].aid, path.trace[cur].mid, path.trace[cur].cont, cur);
-					document.body.className = "ex";
-					var trace_tpl = document.querySelector('#trace-tpl').innerHTML;
-					document.querySelector(".trace").innerHTML = getHtml(trace_tpl, path.trace);
-				});
-			}*/
-			/*var mark = window.location.hash.replace(/#s/,"").split("_");
-			for (var i = 0; i < mark.length; i++) {
-			}
-			var hash = window.location.hash.split("s");
-			var m = hash[0];
-			var req = {}
-			if(/#m\d+/.test(m)) {
-				req.mid = m.match(/#m(\d+)/)[1];
-				hash = hash.slice(1);
-			}
-			req.scene = [];
-			for (var i = 0; i < hash.length; i++) {
-				if(/(\d+)_(\d+)/.test(hash[i])) {
-					var trace = hash[i].match(/(\d+)_(\d+)/);
-					req.scene[i] = {}
-					req.scene[i].sid = trace[1];
-					req.scene[i].aid = trace[2];
+					});
 				}
-			}*/
-			/* start */
+				I.add = function(id) {
+					var cont = $add.value;
+					if(cont.length > 10) {
+						alert("超过10字了，精简一下吧");
+						return;
+					}
+					var data = 'id=' + id + '&cont=' + cont;
+					ajax("data/action.php", data, function(data) {
+						if(data == 1) {
+							action.get(id, cont);
+							$add.value = "";
+							$popup.style.display = "none";
+						}else{
+							alert("添加失败");
+						}
+					});
+				}
+
+				return I;
+			}());
+			/* action */
+
+			/** dom control **/
+			/*** bind function ***/
+			var $add = document.querySelector("#add");
+			var $add_btn = document.querySelector("#add-btn");
+			var $popup = document.querySelector(".popup");
+			var $popup_tip = $popup.querySelector(".tip");
+			var $popup_len = $popup.querySelector(".length");
+			var $page = document.querySelector(".page");
+			var $loading = document.querySelector(".loading");
+
+			$page.addEventListener("click", pageClick);
+			$popup.addEventListener("click", function(e) {
+				(/popup/.test(e.target.className)) && (this.style.display = "none");
+			});
+			$loading.addEventListener("click", function(e) {
+				this.style.display = "none";
+			});
+			$add.onkeyup = function() {
+				$popup_len.innerHTML = "已输入" + $add.value.length + "字";
+			}
+			/*** bind function ***/
+
+			front.get();
 		</script>
 	</body>
 </html>
