@@ -29,11 +29,14 @@ switch ($_POST['opt']) {
 
 	case 'add_link':
 		// add exist scene to new action
+		$aid = $_POST['aid'];
 		$sid = $_POST['sid'];
-		if($aid) {
-			$sql = "INSERT INTO link (aid,sid) VALUES ('$aid','$sid')";
-			$result = mysql_query($sql);
-		}
+		$first = $_POST['first'];
+		$sql = "UPDATE scene SET first='$first' WHERE id='$sid'";
+		echo $sql;
+		$result = mysql_query($sql);
+		$sql = "INSERT INTO link (aid,sid) VALUES ('$aid','$sid')";
+		$result = mysql_query($sql);
 		echo $result;
 		break;
 

@@ -31,7 +31,7 @@
 				-webkit-transition: 0.6s;
 				transition: 0.6s;
 			}
-			.node .front,
+			.node .main,
 			.node .scene {
 				padding: 15px 10px;
 				cursor: pointer;
@@ -66,7 +66,7 @@
 			.pass .add {
 				display: none;
 			}
-			.pass .node .front,
+			.pass .node .main,
 			.pass .node .scene {
 				font: 0px/0em arial;
 				padding: 0;
@@ -80,7 +80,7 @@
 			.pass .node.active .add {
 				display: inline-block;
 			}
-			.pass .node.active .front,
+			.pass .node.active .main,
 			.pass .node.active .scene {
 				padding: 15px 10px;
 				font: 16px/1.5em arial;
@@ -196,7 +196,7 @@
 				text-align: center;
 				cursor: pointer;
 			}
-			.popup {
+			#popup {
 				position: fixed;
 				top: 0;
 				left: 0;
@@ -204,7 +204,7 @@
 				height: 100%;
 				background: rgba(0,0,0,.2);
 			}
-			.popup .box {
+			#popup .box {
 				width: 50%;
 				margin: 110px 25%;
 				position: relative;
@@ -337,20 +337,17 @@
 			<div class="ball"></div>
 		</div>
 		<ul class="nav">
-			<li onclick="front.get();">首页</li>
+			<li onclick="main.get();">首页</li>
 			<li onclick="alert('直接分享当前地址，对方即可收到当前场景');">分享</li>
 			<li onclick="alert('用户登录(未完成)，当前数据随时会清空');">登录</li>
 			<li onclick="alert('没有使用帮助,动画手势陆续添加中')">?</li>
 		</ul>
 		<div class="stage">
-			<!-- <div class="left">
-				<ul class="trace"></ul>
-			</div>
-			<div class="arrow">></div> -->
 			<div class="page"></div>
 		</div>
 		<!-- template -->
-		<div class="popup tpl">
+		<!-- put aside <template> for the moment -->
+		<div id="popup" class="tpl">
 			<div class="box">
 				<p class="tip"></p>
 				<textarea id="add" type="text"></textarea>
@@ -359,47 +356,46 @@
 				<span id="add-btn">添加</span>
 			</div>
 		</div>
-		<div class="user tpl">
-			<div class="box"></div>
-		</div>
+		<div id="scene-exist" class="exist" data-aid="0"></div>
 		<!-- id cont tag time -->
-		<template id="front-tpl" class="tpl">
+		<div id="main-tpl" class="tpl">
 			<div class="node">
-				<div class="front" data-mid="{#id}" data-aid="0">{#cont}</div>
+				<div class="main" data-mid="{#id}" data-aid="0">{#cont}</div>
 			</div>
-		</template>
-		<template id="add-front-tpl" class="tpl">
-			<span class="add" data-type="front">添加主题</span>
-		</template>
+		</div>
+		<div id="add-main-tpl" class="tpl">
+			<span class="add" data-type="main">添加主题</span>
+		</div>
 		<!-- id mid aid cont time -->
-		<template id="scene-tpl" class="tpl">
+		<div id="scene-tpl" class="tpl">
 			<div class="node">
 				<div class="scene" data-sid="{#id}" data-mid="{#mid}">{#cont}</div>
 				<div id="s{#id}" class="action"></div>
 			</div>
-		</template>
-		<template id="add-scene-tpl" class="tpl">
+		</div>
+		<div id="scene-exist-tpl" class="tpl">
+			<div class="scene" data-sid="{#id}">{#cont}</div>
+		</div>
+		<div id="add-scene-tpl" class="tpl">
 			<span class="add" data-type="scene" data-aid="{#aid}" data-mid="{#mid}">添加场景</span>
-		</template>
+			<span class="add" data-type="scene-exist" data-aid="{#aid}" data-mid="{#mid}">添加已有场景</span>
+		</div>
 		<!-- id sid cont time -->
-		<template id="action-tpl" class="tpl">
+		<div id="action-tpl" class="tpl">
 			<span id="a{#id}" class="option" data-aid="{#id}" data-rollback="{#rollback}">{#cont}</span>
-		</template>
-		<template id="add-action-tpl" class="tpl">
+		</div>
+		<div id="add-action-tpl" class="tpl">
 			<span class="add" data-type="action" data-id="{#id}">+</span>
-		</template>
-		<template id="trace-tpl" class="tpl">
-			<li class="box{#active}" onclick="getTrace({#aid},{#mid},'{#cont}',{#pos})"><b>{#pos}</b><span>{#cont}</span></li>
-		</template>
+		</div>
 		<!-- template -->
 		<script>
-			var dom = document.createElement('div');
+			/*var dom = document.createElement('div');
 			if(!('webkitTransform' in dom.style)) {
 				alert("当前不支持该浏览器");
-			}
+			}*/
 
 			var cache = {
-				front: [],
+				main: [],
 				scene: {},
 				action: {}
 			}
@@ -481,110 +477,24 @@
 			}
 			/*** util end ****/
 
-			function pageClick(e) {
-				var t = e.target;
-				var d = t.dataset;
-				switch(t.className) {
-					case "front":
-						var $layer = t.parentNodes("layer");
-						var $node = t.parentNodes("node");
-
-						$layer.toggleClass("pass");
-						$node.toggleClass("active");
-						//aid = 0
-						scene.get(d.aid, d.mid, 0);
-					break;
-					case "scene":
-						var $node = t.parentNodes("node");
-						var $option = $node.querySelector(".option.active");
-						if($option) {
-							var $layer = t.parentNodes("layer");
-
-							$layer.toggleClass("pass");
-							$node.toggleClass("active");
-						} else {
-							action.get(d.sid, t);
-						}
-					break;
-					case "option":
-					case "option active":
-						var $scene = t.parentNodes("node").querySelector(".scene");	//useless
-						var $layer = t.parentNodes("layer");
-						var $node = t.parentNodes("node");
-						var $option = t;
-
-						$layer.addClass("pass");
-
-						var $node_a = $layer.querySelector(".node.active");
-						$node_a && $node_a.removeClass("active");
-						$node.addClass("active");
-
-						var $option_a = $layer.querySelector(".option.active");
-						$option_a && $option_a.removeClass("active");
-						$option.addClass("active");
-
-						//mid = 0
-						scene.get(d.aid, $scene.dataset.mid, parseInt($layer.id.substr(1)) + 1);
-					break;
-					case "add":
-						popup(t);
-					break;
-				}
-			}
-
-			var _user = 0;
-			function popup(t) {
-				/** add function **/
-				/*if(!_user) {
-					_user = prompt("随便输个id用来记录，后续添加登录功能","name");
-					if( !_user || _user == "name") {
-						alert("随便打几个字符就好");
-						return;
-					}
-				}*/
-				var data = t.dataset;
-				switch(data.type) {
-					case "front":
-						$popup_tip.innerHTML = "问题请在100字内描述完";
-						$add_btn.onclick = function() {
-							front.add();
-						}
-					break;
-					case "scene":
-						$popup_tip.innerHTML = "场景描述50字就够了";
-						$add_btn.onclick = function() {
-							scene.add(data.aid, data.mid, parseInt(t.parentNode.id.substr(1)));
-						}
-					break;
-					case "action":
-						$popup_tip.innerHTML = "10字以内";
-						$add_btn.onclick = function() {
-							action.add(data.id);
-						}
-					break;
-				}
-				$popup_len.innerHTML = "已输入0字";
-				$popup.style.display = "block";
-			}
-
-			/* front */
-			var front = (function() {
+			/* main */
+			var main = (function() {
 				var I = {}
-				var front_tpl = document.querySelector('#front-tpl').innerHTML;
-				var add_front_tpl = document.querySelector('#add-front-tpl').innerHTML;
+				var main_tpl = document.querySelector('#main-tpl').innerHTML;
+				var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
 
 				I.get = function() {
-					if(cache.front.length > 0) {
-						var data = cache.front;
-						$page.innerHTML = '<div class="layer">' + getHtml(front_tpl, data) +  add_front_tpl + '</div>';
+					if(cache.main.length > 0) {
+						var data = cache.main;
+						$page.innerHTML = '<div class="layer">' + getHtml(main_tpl, data) +  add_main_tpl + '</div>';
 						return;
 					}
-					ajax("data/front.php", "", function(data) {
+					ajax("data/main.php", "", function(data) {
 						if(data) {
-							cache.front = data;
-							$page.innerHTML = '<div class="layer">' + getHtml(front_tpl, data) +  add_front_tpl + '</div>';
+							cache.main = data;
+							$page.innerHTML = '<div class="layer">' + getHtml(main_tpl, data) +  add_main_tpl + '</div>';
 						} else {
-							$page.innerHTML = add_front_tpl;
+							$page.innerHTML = add_main_tpl;
 						}
 					});
 				}
@@ -595,9 +505,9 @@
 						return;
 					}
 					var data = 'cont=' + cont;
-					ajax("data/front.php", data, function(data) {
+					ajax("data/main.php", data, function(data) {
 						if(data == 1) {
-							front.get();
+							main.get();
 							$add.value = "";
 							$popup.style.display = "none";
 						}else{
@@ -608,18 +518,20 @@
 
 				return I;
 			}());
-			/* front */
+			/* main */
 			/* scene */
 			var scene = (function() {
 				var I = {}
 				var scene_tpl = document.querySelector('#scene-tpl').innerHTML;
 				var add_scene_tpl = document.querySelector('#add-scene-tpl').innerHTML;
+				var scene_exist_tpl = document.querySelector('#scene-exist-tpl').innerHTML;
+				var $scene_exist = document.querySelector("#scene-exist");
 
 				I.get = function(aid, mid, cur, callback) {
 					if(aid != 0) {
-						var post_data = "aid=" + aid;
+						var post_data = "opt=aid&aid=" + aid;
 					} else {
-						var post_data = "mid=" + mid;
+						var post_data = "opt=mid&mid=" + mid;
 					}
 					var add_data = [{'aid': aid, 'mid': mid}];
 					cache.scene[post_data] = cache.scene[post_data] || [];
@@ -641,14 +553,13 @@
 						$loading.style.display = "block";
 					}, 300);
 					ajax("data/scene.php", post_data, function(data) {
-						// setTrace(aid, mid, cont);
 						clearTimeout(loading);
 						$loading.style.display = "none";
 						if(data) {
 							cache.scene[post_data] = data;
 							var $layer = document.querySelector('#l' + cur);
 							if($layer) {
-								$layer.className = $layer.className.replace(" pass","");
+								$layer.removeClass("pass");
 								$layer.innerHTML = getHtml(scene_tpl, data) + getHtml(add_scene_tpl, add_data);
 								while($layer.nextSibling) {
 									$page.removeChild($layer.nextSibling);
@@ -659,7 +570,7 @@
 						} else {
 							var $layer = document.querySelector('#l' + cur);
 							if($layer) {
-								$layer.className = $layer.className.replace(" pass","");
+								$layer.removeClass("pass");
 								$layer.innerHTML = getHtml(add_scene_tpl, add_data);
 								while($layer.nextSibling) {
 									$page.removeChild($layer.nextSibling);
@@ -672,6 +583,22 @@
 						callback();
 					});
 				}
+				I.getExist = function(aid, mid) {
+					var post_data = "opt=exist&mid=" + mid;
+					cache.scene[post_data] = cache.scene[post_data] || [];
+					var loading = setTimeout(function() {
+						$loading.style.display = "block";
+					}, 300);
+					ajax("data/scene.php", post_data, function(data) {
+						clearTimeout(loading);
+						$loading.style.display = "none";
+						if(data) {
+							$scene_exist.dataset.aid = aid;
+							$scene_exist.innerHTML = getHtml(scene_exist_tpl, data);
+							cache.scene[post_data] = data;
+						}
+					});
+				}
 				I.add = function(aid, mid, cur) {
 					var cont = $add.value;
 					var sid = document.querySelector("#exist-node").value;
@@ -680,13 +607,27 @@
 						return;
 					}
 					var first = (aid == 0) ? 1 : 0;
-					var post_data = 'aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&first=' + first + '&sid=' + sid;
+					var post_data = 'opt=add&aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&first=' + first + '&sid=' + sid;
 					ajax("data/scene.php", post_data, function(data) {
 						if(data == 1) {
 							scene.get(aid, mid, cur, function() {
 								$add.value = "";
 								$popup.style.display = "none";
 							});
+						}else{
+							alert("添加失败");
+						}
+					});
+				}
+				I.addLink = function(aid, sid) {
+					var first = (aid == 0) ? 1 : 0;
+					var post_data = 'opt=add_link&aid=' + aid + '&sid=' + sid + '&first=' + first;
+					ajax("data/scene.php", post_data, function(data) {
+						if(data == 1) {
+							/*scene.get(aid, mid, cur, function() {
+								$add.value = "";
+								$popup.style.display = "none";
+							});*/
 						}else{
 							alert("添加失败");
 						}
@@ -754,18 +695,117 @@
 			/* action */
 
 			/** dom control **/
+			function pageClick(e) {
+				var t = e.target;
+				var d = t.dataset;
+				switch(t.className) {
+					case "main":
+						var $layer = t.parentNodes("layer");
+						var $node = t.parentNodes("node");
+
+						if(!/active/.test($node.className)) {
+							//aid = 0
+							scene.get(d.aid, d.mid, 0);
+						}
+
+						$layer.toggleClass("pass");
+						$node.toggleClass("active");
+					break;
+					case "scene":
+						var $node = t.parentNodes("node");
+						var $option = $node.querySelector(".option.active");
+						if($option) {
+							var $layer = t.parentNodes("layer");
+
+							$layer.toggleClass("pass");
+							$node.toggleClass("active");
+						} else {
+							action.get(d.sid, t);
+						}
+					break;
+					case "option":
+					case "option active":
+						var $scene = t.parentNodes("node").querySelector(".scene");	//useless
+						var $layer = t.parentNodes("layer");
+						var $node = t.parentNodes("node");
+						var $option = t;
+
+						$layer.addClass("pass");
+
+						var $node_a = $layer.querySelector(".node.active");
+						$node_a && $node_a.removeClass("active");
+						$node.addClass("active");
+
+						var $option_a = $layer.querySelector(".option.active");
+						$option_a && $option_a.removeClass("active");
+						$option.addClass("active");
+
+						//mid = 0
+						scene.get(d.aid, $scene.dataset.mid, parseInt($layer.id.substr(1)) + 1);
+					break;
+					case "add":
+						popup(t);
+					break;
+				}
+			}
+
+			var _user = 0;
+			function popup(t) {
+				/** add function **/
+				/*if(!_user) {
+					_user = prompt("随便输个id用来记录，后续添加登录功能","name");
+					if( !_user || _user == "name") {
+						alert("随便打几个字符就好");
+						return;
+					}
+				}*/
+				var data = t.dataset;
+				switch(data.type) {
+					case "main":
+						$popup_tip.innerHTML = "问题请在100字内描述完";
+						$add_btn.onclick = function() {
+							main.add();
+						}
+					break;
+					case "scene":
+						$popup_tip.innerHTML = "场景描述50字就够了";
+						$add_btn.onclick = function() {
+							scene.add(data.aid, data.mid, parseInt(t.parentNode.id.substr(1)));
+						}
+					break;
+					case "scene-exist":
+						scene.getExist(data.aid, data.mid);
+					break;
+					case "action":
+						$popup_tip.innerHTML = "10字以内";
+						$add_btn.onclick = function() {
+							action.add(data.id);
+						}
+					break;
+				}
+				$popup_len.innerHTML = "已输入0字";
+				$popup.style.display = "block";
+			}
+
+			function addLink(e) {
+				var aid = e.target.parentNodes("exist").dataset.aid;
+				var sid = e.target.dataset.sid;
+				scene.addLink(aid, sid);
+			}
+
 			/*** bind function ***/
 			var $add = document.querySelector("#add");
 			var $add_btn = document.querySelector("#add-btn");
-			var $popup = document.querySelector(".popup");
+			var $popup = document.querySelector("#popup");
 			var $popup_tip = $popup.querySelector(".tip");
 			var $popup_len = $popup.querySelector(".length");
 			var $page = document.querySelector(".page");
 			var $loading = document.querySelector(".loading");
+			var $scene_exist = document.querySelector("#scene-exist");
 
 			$page.addEventListener("click", pageClick);
 			$popup.addEventListener("click", function(e) {
-				(/popup/.test(e.target.className)) && (this.style.display = "none");
+				(/popup/.test(e.target.id)) && (this.style.display = "none");
 			});
 			$loading.addEventListener("click", function(e) {
 				this.style.display = "none";
@@ -773,9 +813,10 @@
 			$add.onkeyup = function() {
 				$popup_len.innerHTML = "已输入" + $add.value.length + "字";
 			}
+			$scene_exist.addEventListener("click", addLink);
 			/*** bind function ***/
 
-			front.get();
+			main.get();
 		</script>
 	</body>
 </html>
