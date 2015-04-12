@@ -129,8 +129,8 @@
 				background: rgba(0,0,0,.2);
 			}
 			#popup .box {
-				width: 90%;
-				margin: 110px 5%;
+				width: 70%;
+				margin: 110px 10%;
 				position: relative;
 				-webkit-animation: popup .6s;
 				animation: popup .6s;
@@ -310,6 +310,7 @@
 				scene: {},
 				action: {}
 			}
+			var loading = 0;
 
 			/*** util ****/
 			HTMLElement.prototype.appendNodes = function(nodes) {
@@ -460,9 +461,10 @@
 						}
 						return;
 					}
-					var loading = setTimeout(function() {
+					clearTimeout(loading);
+					loading = setTimeout(function() {
 						$loading.style.display = "block";
-					}, 300);
+					}, 600);
 					ajax("data/scene.php", post_data, function(data) {
 						clearTimeout(loading);
 						$loading.style.display = "none";
@@ -497,9 +499,10 @@
 				I.getExist = function(aid, mid, cur) {
 					var post_data = "opt=exist&mid=" + mid;
 					cache.scene[post_data] = cache.scene[post_data] || [];
-					var loading = setTimeout(function() {
+					clearTimeout(loading);
+					loading = setTimeout(function() {
 						$loading.style.display = "block";
-					}, 300);
+					}, 600);
 					ajax("data/scene.php", post_data, function(data) {
 						clearTimeout(loading);
 						$loading.style.display = "none";
@@ -576,9 +579,10 @@
 						$action.innerHTML = getHtml(action_tpl, data) + getHtml(add_action_tpl, add_data);
 						return;
 					}
-					var loading = setTimeout(function() {
+					clearTimeout(loading);
+					loading = setTimeout(function() {
 						$loading.style.display = "block";
-					}, 300);
+					}, 600);
 					ajax("data/action.php", "id=" + sid, function(data) {
 						clearTimeout(loading);
 						if(data) {
