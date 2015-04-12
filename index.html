@@ -10,17 +10,24 @@
 		<meta name ="keywords" content="Sign,ccx01,sign,the day of sign,signXday,沙因,游戏,银河,宇宙,时间,链式反应">
 		<meta name="description" content="链式反应,计划通,链式问答具象化">
 		<style>
+			html,
 			body {
+				height: 100%;
 				margin: 0;
 				padding: 0;
-			}
-			.layer {
-				margin: 10px 0;
-				padding: 10px 0;
-				background: #49e;
-				overflow: hidden;
 				-webkit-transition: 0.6s;
 				transition: 0.6s;
+			}
+			.layer {
+				background: #49e;
+				/*height: 100vh;*/
+				overflow: auto;
+				-webkit-transition: 0.6s;
+				transition: 0.6s;
+			}
+			.layer.pass {
+				height: auto;
+				background: #88ea72;
 			}
 			.node {
 				overflow: hidden;
@@ -40,7 +47,6 @@
 				transition: 0.3s;
 			}
 			.node .action {
-				overflow: hidden;
 				float: left;
 			}
 			.node .action .option,
@@ -52,29 +58,21 @@
 				margin: 0 0 10px 10px;
 				font: 16px/1em arial;
 				cursor: pointer;
-				/*-webkit-transition: 0.3s;
-				transition: 0.3s;*/
-			}
-			.pass {
-				margin: 0;
-				padding: 0;
 			}
 			.pass .node {
 				margin: 0;
-				padding: 0;
 			}
 			.pass .add {
 				display: none;
 			}
-			.pass .node .main,
-			.pass .node .scene {
+			.pass .main,
+			.pass .scene {
 				font: 0px/0em arial;
 				padding: 0;
 			}
 			
 			.pass .node.active {
 				margin: 5px 10px 10px;
-				opacity: 1;
 				box-shadow: none;
 			}
 			.pass .node.active .add {
@@ -101,75 +99,14 @@
 			}
 			.add {
 				display: inline-block;
-				border-radius: 5px;
 				margin: 10px;
 				padding: 10px;
 				border: 1px solid #ccc;
 				background: #fff;
-				border-radius: 4px;
+				border-radius: 5px;
 				cursor: pointer;
-			}
-			.nav {
-				/*position: fixed;
-				top: 0;
-				left: 0;*/
-				margin: 0;
-				padding: 0;
-				height: 60px;
-				/*width: 100%;*/
-				z-index: 99;
-				box-shadow: 0 3px 1px #aaa;
-				background: #fff;
-			}
-			.nav li {
-				display: inline;
-				padding: 10px;
-				border: 1px solid #ccc;
-				box-shadow: 1px 1px 3px #ccc;
-				border-radius: 4px;
-				line-height: 60px;
-				margin-left: 8px;
-				cursor: pointer;
-			}
-			.nav li:hover {
-				color: #fff;
-				background: #49e;
-			}
-			.left {
-				position: fixed;
-				top: 0;
-				left: 0;
-				width: 20%;
-				height: 100%;
-				overflow: auto;
-				background: #363636;
-			}
-			.trace {
-				padding: 0;
-				margin-top: 80px;
-			}
-			.trace li {
-				cursor: pointer;
-			}
-			.trace .active {
-				background: #9add73;
-				box-shadow: 0 2px 1px #999;
-			}
-			.trace b {
-				display: none;
-			}
-			.last {
-				position: relative;
-				top: 75px;
-				left: 22%;
-				width: 75%;
 			}
 			.page {
-				/*position: relative;
-				top: 90px;
-				left: 22%;
-				width: 75%;
-				outline: none;*/
 				-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
 			}
 			.tpl {
@@ -183,19 +120,6 @@
 				background: #fefefe;
 				box-shadow: 0 5px 1px #999;
 			}
-			.arrow {
-				width: 30px;
-				height: 60px;
-				line-height: 60px;
-				font-size: 20px;
-				color: #fff;
-				background: #363636;
-				bottom: 20px;
-				left: 20%;
-				position: fixed;
-				text-align: center;
-				cursor: pointer;
-			}
 			#popup {
 				position: fixed;
 				top: 0;
@@ -205,9 +129,27 @@
 				background: rgba(0,0,0,.2);
 			}
 			#popup .box {
-				width: 50%;
-				margin: 110px 25%;
+				width: 90%;
+				margin: 110px 5%;
 				position: relative;
+				-webkit-animation: popup .6s;
+				animation: popup .6s;
+			}
+			@-webkit-keyframes popup {
+				0% {
+					-webkit-transform: scale(0);
+				}
+				100% {
+					-webkit-transform: scale(1);
+				}
+			}
+			@keyframes popup {
+				0% {
+					transform: scale(0);
+				}
+				100% {
+					transform: scale(1);
+				}
 			}
 			.box textarea {
 				display: block;
@@ -222,26 +164,24 @@
 				box-shadow: 1px 1px 1px #ccc;
 				cursor: pointer;
 			}
-			.ex .left {
-				width: 75%;
-			}
-			.ex .page {
-				left: 77%;
-				width: 20%;
-			}
-			.ex .arrow {
-				left: 75%;
-			}
-			.user {
-				width: 100px;
-				height: 100px;
-				border-radius: 50%;
-				box-shadow: 0 0 6px #aaa;
-				background: #fff;
+			#scene-exist {
 				position: fixed;
-				bottom: 20px;
-				right: 20px;
+				width: 0;
+				height: 100%;
+				top: 0;
+				left: 0;
+				overflow: hidden;
+				background: rgba(0,0,0,.3);
+				-webkit-transition: 0.6s;
+				transition: 0.6s;
 			}
+			.scene-e {
+				margin: 10px 10px 10px 20%;
+				padding: 20px;
+				background: #fff;
+				border-radius: 4px;
+			}
+
 			.loading {
 				display: none;
 				position: fixed;
@@ -299,36 +239,16 @@
 					transform: translate3d(0, -30px, 0);
 				}
 			}
-			@media screen and (max-width: 640px){
-				.trace span {
-					display: none;
-				}
-				.trace b {
-					display: block;
-				}
-				.arrow {
-					width: 15px;
-					height: 30px;
-					line-height: 30px;
-					font-size: 30px;
-				}
-				.user {
-					width: 30px;
-					height: 30px;
-				}
-				.ex .trace span {
-					display: block;
-				}
-				.ex .trace b {
-					display: none;
-				}
-				.ex .node {
-					white-space: nowrap;
-				}
-				.ex .action,
-				.ex .add {
-					display: none;
-				}
+			#weixin {
+				position: fixed;
+				top: 0;
+				left: 0;
+				width: 100%;
+				height: 100%;
+				background: rgba(0,0,0,.8);
+				text-align: center;
+				color: #fff;
+				font-size: 30px;
 			}
 		</style>
 	</head>
@@ -336,12 +256,6 @@
 		<div class="loading">
 			<div class="ball"></div>
 		</div>
-		<ul class="nav">
-			<li onclick="main.get();">首页</li>
-			<li onclick="alert('直接分享当前地址，对方即可收到当前场景');">分享</li>
-			<li onclick="alert('用户登录(未完成)，当前数据随时会清空');">登录</li>
-			<li onclick="alert('没有使用帮助,动画手势陆续添加中')">?</li>
-		</ul>
 		<div class="stage">
 			<div class="page"></div>
 		</div>
@@ -351,7 +265,6 @@
 			<div class="box">
 				<p class="tip"></p>
 				<textarea id="add" type="text"></textarea>
-				<textarea id="exist-node" type="text"></textarea>
 				<p class="length"></p>
 				<span id="add-btn">添加</span>
 			</div>
@@ -374,7 +287,7 @@
 			</div>
 		</div>
 		<div id="scene-exist-tpl" class="tpl">
-			<div class="scene" data-sid="{#id}">{#cont}</div>
+			<div class="scene-e" data-sid="{#id}">{#cont}</div>
 		</div>
 		<div id="add-scene-tpl" class="tpl">
 			<span class="add" data-type="scene" data-aid="{#aid}" data-mid="{#mid}">添加场景</span>
@@ -388,11 +301,9 @@
 			<span class="add" data-type="action" data-id="{#id}">+</span>
 		</div>
 		<!-- template -->
+		<div id="weixin">因为没有申请公众号，页面功能被微信删了，在浏览器里直接输入ccx01.com进行访问吧</div>
 		<script>
-			/*var dom = document.createElement('div');
-			if(!('webkitTransform' in dom.style)) {
-				alert("当前不支持该浏览器");
-			}*/
+			document.getElementById("weixin").style.display = "none";
 
 			var cache = {
 				main: [],
@@ -483,8 +394,8 @@
 				var main_tpl = document.querySelector('#main-tpl').innerHTML;
 				var add_main_tpl = document.querySelector('#add-main-tpl').innerHTML;
 
-				I.get = function() {
-					if(cache.main.length > 0) {
+				I.get = function(no_cache) {
+					if(!no_cache && cache.main.length > 0) {
 						var data = cache.main;
 						$page.innerHTML = '<div class="layer">' + getHtml(main_tpl, data) +  add_main_tpl + '</div>';
 						return;
@@ -507,7 +418,7 @@
 					var data = 'cont=' + cont;
 					ajax("data/main.php", data, function(data) {
 						if(data == 1) {
-							main.get();
+							main.get(true);
 							$add.value = "";
 							$popup.style.display = "none";
 						}else{
@@ -583,7 +494,7 @@
 						callback();
 					});
 				}
-				I.getExist = function(aid, mid) {
+				I.getExist = function(aid, mid, cur) {
 					var post_data = "opt=exist&mid=" + mid;
 					cache.scene[post_data] = cache.scene[post_data] || [];
 					var loading = setTimeout(function() {
@@ -592,24 +503,30 @@
 					ajax("data/scene.php", post_data, function(data) {
 						clearTimeout(loading);
 						$loading.style.display = "none";
+						var scene_html = "";
 						if(data) {
-							$scene_exist.dataset.aid = aid;
-							$scene_exist.innerHTML = getHtml(scene_exist_tpl, data);
+							scene_html = getHtml(scene_exist_tpl, data);
 							cache.scene[post_data] = data;
 						}
+						$scene_exist.dataset.aid = aid;
+						$scene_exist.dataset.mid = mid;
+						$scene_exist.dataset.cur = cur;
+						$scene_exist.innerHTML = scene_html;
+						$scene_exist.style.width = "100%";
 					});
 				}
 				I.add = function(aid, mid, cur) {
 					var cont = $add.value;
-					var sid = document.querySelector("#exist-node").value;
 					if(cont.length > 50) {
 						alert("超过50字了，精简一下吧");
 						return;
 					}
 					var first = (aid == 0) ? 1 : 0;
-					var post_data = 'opt=add&aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&first=' + first + '&sid=' + sid;
+					var post_data = 'opt=add&aid=' + aid + '&mid=' + mid + '&cont=' + cont + '&first=' + first;
 					ajax("data/scene.php", post_data, function(data) {
 						if(data == 1) {
+							cache.scene["opt=aid&aid=" + aid] = [];
+							cache.scene["opt=mid&mid=" + mid] = [];
 							scene.get(aid, mid, cur, function() {
 								$add.value = "";
 								$popup.style.display = "none";
@@ -619,15 +536,16 @@
 						}
 					});
 				}
-				I.addLink = function(aid, sid) {
+				I.addLink = function(aid, sid, mid, cur) {
 					var first = (aid == 0) ? 1 : 0;
 					var post_data = 'opt=add_link&aid=' + aid + '&sid=' + sid + '&first=' + first;
 					ajax("data/scene.php", post_data, function(data) {
 						if(data == 1) {
-							/*scene.get(aid, mid, cur, function() {
-								$add.value = "";
-								$popup.style.display = "none";
-							});*/
+							cache.scene["opt=aid&aid=" + aid] = [];
+							cache.scene["opt=mid&mid=" + mid] = [];
+							scene.get(aid, mid, cur, function() {
+								$scene_exist.style.width = "0";
+							});
 						}else{
 							alert("添加失败");
 						}
@@ -644,10 +562,9 @@
 				var add_action_tpl = document.querySelector('#add-action-tpl').innerHTML;
 
 				I.get = function(sid, t) {
-					var cont = t.innerHTML;
 					var add_data = [{'id': sid}];
 					cache.action["s" + sid] = cache.action["s" + sid] || [];
-					var $action = t.nextSibling;
+					var $action = t;
 					while($action) {
 						if($action.className == "action") {
 							break;
@@ -672,7 +589,7 @@
 						}
 					});
 				}
-				I.add = function(id) {
+				I.add = function(id, t) {
 					var cont = $add.value;
 					if(cont.length > 10) {
 						alert("超过10字了，精简一下吧");
@@ -681,7 +598,7 @@
 					var data = 'id=' + id + '&cont=' + cont;
 					ajax("data/action.php", data, function(data) {
 						if(data == 1) {
-							action.get(id, cont);
+							action.get(id, t);
 							$add.value = "";
 							$popup.style.display = "none";
 						}else{
@@ -766,31 +683,43 @@
 						$add_btn.onclick = function() {
 							main.add();
 						}
+						$popup.style.display = "block";
 					break;
 					case "scene":
 						$popup_tip.innerHTML = "场景描述50字就够了";
 						$add_btn.onclick = function() {
 							scene.add(data.aid, data.mid, parseInt(t.parentNode.id.substr(1)));
 						}
+						$popup.style.display = "block";
 					break;
 					case "scene-exist":
-						scene.getExist(data.aid, data.mid);
+						scene.getExist(data.aid, data.mid, parseInt(t.parentNode.id.substr(1)));
 					break;
 					case "action":
 						$popup_tip.innerHTML = "10字以内";
 						$add_btn.onclick = function() {
-							action.add(data.id);
+							action.add(data.id, t.parentNodes("action"));
 						}
+						$popup.style.display = "block";
 					break;
 				}
 				$popup_len.innerHTML = "已输入0字";
-				$popup.style.display = "block";
 			}
 
 			function addLink(e) {
-				var aid = e.target.parentNodes("exist").dataset.aid;
-				var sid = e.target.dataset.sid;
-				scene.addLink(aid, sid);
+				var t = e.target;
+				switch(t.className) {
+					case "exist":
+						t.style.width = "0";
+						break;
+					case "scene-e":
+						var aid = t.parentNodes("exist").dataset.aid;
+						var mid = t.parentNodes("exist").dataset.mid;
+						var cur = t.parentNodes("exist").dataset.cur;
+						var sid = t.dataset.sid;
+						scene.addLink(aid, sid, mid, cur);
+						break;
+				}
 			}
 
 			/*** bind function ***/
