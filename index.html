@@ -22,11 +22,13 @@
 				background: #49e;
 				/*height: 100vh;*/
 				overflow: auto;
+				border-bottom: 1px solid #fff;
 				-webkit-transition: 0.6s;
 				transition: 0.6s;
 			}
 			.layer.pass {
 				height: auto;
+				border-bottom: 0px solid #fff;
 				background: #88ea72;
 			}
 			.node {
@@ -387,7 +389,7 @@
 						$page.innerHTML = '<div class="layer">' + getHtml(main_tpl, data) +  add_main_tpl + '</div>';
 						return;
 					}
-					ajax("data/main.php", "", function(data) {
+					ajax("data/main.php", "opt=get", function(data) {
 						if(data) {
 							cache.main = data;
 							$page.innerHTML = '<div class="layer">' + getHtml(main_tpl, data) +  add_main_tpl + '</div>';
@@ -402,7 +404,7 @@
 						alert("超过100字了，精简一下吧");
 						return;
 					}
-					var data = 'cont=' + cont;
+					var data = 'opt=add&cont=' + cont;
 					ajax("data/main.php", data, function(data) {
 						if(data == 1) {
 							main.get(true);
@@ -569,7 +571,7 @@
 					loading = setTimeout(function() {
 						$loading.style.display = "block";
 					}, 600);
-					ajax("data/action.php", "id=" + sid, function(data) {
+					ajax("data/action.php", "opt=sid&id=" + sid, function(data) {
 						clearTimeout(loading);
 						if(data) {
 							cache.action["s" + sid] = data;
@@ -585,7 +587,7 @@
 						alert("超过10字了，精简一下吧");
 						return;
 					}
-					var data = 'id=' + id + '&cont=' + cont;
+					var data = 'opt=add&id=' + id + '&cont=' + cont;
 					ajax("data/action.php", data, function(data) {
 						if(data == 1) {
 							action.get(id, t);

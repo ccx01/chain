@@ -32,8 +32,10 @@ switch ($_POST['opt']) {
 		$aid = $_POST['aid'];
 		$sid = $_POST['sid'];
 		$first = $_POST['first'];
-		$sql = "UPDATE scene SET first='$first' WHERE id='$sid'";
-		$result = mysql_query($sql);
+		if($first) {
+			$sql = "UPDATE scene SET first='$first' WHERE id='$sid'";
+			$result = mysql_query($sql);
+		}
 		$sql = "INSERT INTO link (aid,sid) VALUES ('$aid','$sid')";
 		$result = mysql_query($sql);
 		echo $result;
