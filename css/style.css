@@ -1,0 +1,231 @@
+html,
+body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	-webkit-transition: 0.6s;
+	transition: 0.6s;
+}
+.layer {
+	background: #49e;
+	/*height: 100vh;*/
+	overflow: auto;
+	border-bottom: 1px solid #fff;
+	-webkit-transition: 0.6s;
+	transition: 0.6s;
+}
+.layer.pass {
+	height: auto;
+	border-bottom: 0px solid #fff;
+	background: #88ea72;
+}
+.node {
+	overflow: hidden;
+	margin: 20px 10px;
+	border-radius: 4px;
+	box-shadow: 0 3px 1px #BEBFC3;
+	background: #fff;
+	-webkit-transition: 0.6s;
+	transition: 0.6s;
+}
+.node .main,
+.node .scene {
+	padding: 15px 10px;
+	cursor: pointer;
+	font: 16px/1.5em arial;
+	-webkit-transition: 0.3s;
+	transition: 0.3s;
+}
+.node .action {
+	float: left;
+}
+.node .action .option,
+.node .add {
+	float: left;
+	border: 1px solid #ddd;
+	padding: 10px;
+	border-radius: 4px;
+	margin: 0 0 10px 10px;
+	font: 16px/1em arial;
+	cursor: pointer;
+}
+.pass .node {
+	margin: 0;
+}
+.pass .add {
+	display: none;
+}
+.pass .main,
+.pass .scene {
+	font: 0px/0em arial;
+	padding: 0;
+}
+
+.pass .node.active {
+	margin: 5px 10px 10px;
+	box-shadow: none;
+}
+.pass .node.active .add {
+	display: inline-block;
+}
+.pass .node.active .main,
+.pass .node.active .scene {
+	padding: 15px 10px;
+	font: 16px/1.5em arial;
+}
+.pass .node .action {
+	display: none;
+}
+.pass .node.active .action {
+	display: block;
+}
+
+.option:hover,
+.add:hover,
+.option.active,
+.add.active {
+	color: #fff;
+	background: #49e;
+}
+.add {
+	display: inline-block;
+	margin: 10px;
+	padding: 10px;
+	border: 1px solid #ccc;
+	background: #fff;
+	border-radius: 5px;
+	cursor: pointer;
+}
+.page {
+	-webkit-tap-highlight-color: rgba(255, 255, 255, 0);
+}
+.tpl {
+	display: none;
+}
+.box {
+	padding: 20px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	margin: 20px 10px;
+	background: #fefefe;
+	box-shadow: 0 5px 1px #999;
+}
+#popup {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0,0,0,.2);
+}
+#popup .box {
+	width: 70%;
+	margin: 110px 10%;
+	position: relative;
+	-webkit-animation: popup .6s;
+	animation: popup .6s;
+}
+@-webkit-keyframes popup {
+	0% {
+		-webkit-transform: scale(0);
+	}
+	100% {
+		-webkit-transform: scale(1);
+	}
+}
+@keyframes popup {
+	0% {
+		transform: scale(0);
+	}
+	100% {
+		transform: scale(1);
+	}
+}
+.box textarea {
+	display: block;
+	margin: 10px 0;
+	width: 90%;
+	height: 70px;
+}
+#add-btn {
+	display: inline-block;
+	border: 1px solid #aaa;
+	padding: 5px;
+	box-shadow: 1px 1px 1px #ccc;
+	cursor: pointer;
+}
+#scene-exist {
+	position: fixed;
+	width: 0;
+	height: 100%;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	background: rgba(0,0,0,.3);
+	-webkit-transition: 0.6s;
+	transition: 0.6s;
+}
+.scene-e {
+	margin: 10px 10px 10px 20%;
+	padding: 20px;
+	background: #fff;
+	border-radius: 4px;
+}
+
+.loading {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background: rgba(0,0,0,0.3);
+	z-index: 99;
+}
+.ball {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	margin-top: -15px;
+	margin-left: -15px;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	background: #49e;
+	-webkit-animation: loading 1s infinite linear;
+	animation: loading 1s infinite linear;
+}
+@-webkit-keyframes loading {
+	0% {
+		-webkit-transform: translate3d(0, -30px, 0);
+	}
+	25% {
+		-webkit-transform: translate3d(30px, 0, 0);
+	}
+	50% {
+		-webkit-transform: translate3d(0, 30px, 0);
+	}
+	75% {
+		-webkit-transform: translate3d(-30px, 0, 0);
+	}
+	100% {
+		-webkit-transform: translate3d(0, -30px, 0);
+	}
+}
+@keyframes loading {
+	0% {
+		transform: translate3d(0, -30px, 0);
+	}
+	25% {
+		transform: translate3d(30px, 0, 0);
+	}
+	50% {
+		transform: translate3d(0, 30px, 0);
+	}
+	75% {
+		transform: translate3d(-30px, 0, 0);
+	}
+	100% {
+		transform: translate3d(0, -30px, 0);
+	}
+}
